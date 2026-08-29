@@ -1,4 +1,3 @@
-@"
 node_modules/
 dist/
 build/
@@ -12,4 +11,3 @@ uploads/
 prisma/*.db
 prisma/*.db-journal
 .tsbuildinfo
-"@ | Out-File -Encoding utf8 backend\.gitignore
