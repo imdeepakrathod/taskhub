@@ -14,4 +14,6 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', uptime: process.uptime() })
 })
 
+console.log("hello")
+
 export default app
