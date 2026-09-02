@@ -9,4 +9,6 @@ Multi-tenant task and workflow management platform.
 - **Database:** PostgreSQL (Prisma)
 - **Tooling:** ESLint, Prettier, Husky, lint-staged, Commitlint
 
+
+
 ## Structure
