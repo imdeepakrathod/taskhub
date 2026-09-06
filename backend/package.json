@@ -11,6 +11,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.ts\"",
     "typecheck": "tsc --noEmit",
+    "postinstall": "prisma generate",
     "db:format": "prisma format",
     "db:validate": "prisma validate",
     "db:generate": "prisma generate",
