@@ -4,25 +4,24 @@ import { z } from 'zod'
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
 
-  PORT: z.coerce.number().int().positive().default(5000),
+  PORT: z.coerce.number().int().positive().default(4000),
 
-  DATABASE_URL: z.string().min(1),
+  CLIENT_URL: z.url(),
 
-  JWT_ACCESS_SECRET: z.string().min(1),
-
-  JWT_REFRESH_SECRET: z.string().min(1),
-
-  CORS_ORIGIN: z.string().min(1),
+  DATABASE_URL: z
+    .string()
+    .min(1, 'DATABASE_URL is required')
+    .startsWith('postgresql://', 'DATABASE_URL must be a PostgreSQL URL'),
 })
 
-const parsedEnv = envSchema.safeParse(process.env)
+const result = envSchema.safeParse(process.env)
 
-if (!parsedEnv.success) {
-  console.error('❌ Invalid environment variables:')
+if (!result.success) {
+  console.error('Invalid environment variables:')
 
-  console.error(parsedEnv.error.flatten().fieldErrors)
+  console.error(z.treeifyError(result.error))
 
   process.exit(1)
 }
 
-export const env = parsedEnv.data
+export const env = result.data
