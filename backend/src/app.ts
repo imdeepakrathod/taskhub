@@ -3,8 +3,11 @@ import cors from 'cors'
 import express from 'express'
 import helmet from 'helmet'
 
+import { NotFoundError } from './common/errors/httpErrors.js'
 import { prisma } from './config/database.js'
 import { env } from './config/env.js'
+import { errorHandler } from './middlewares/errorHandler.js'
+import authRouter from './modules/auth/auth.routes.js'
 
 const app = express()
 
@@ -44,5 +47,13 @@ app.get('/ready', async (_req, res) => {
     })
   }
 })
+
+app.use('/api/v1/auth', authRouter)
+
+app.use((_req, _res, next) => {
+  next(new NotFoundError('Route not found', 'ROUTE_NOT_FOUND'))
+})
+
+app.use(errorHandler)
 
 export default app

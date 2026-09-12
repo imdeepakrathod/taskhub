@@ -12,3 +12,10 @@ prisma/*.db
 prisma/*.db-journal
 .tsbuildinfo
 src/generated/prisma/*
+# AI development tools
+.agents/
+.claude/
+.windsurf/
+skills-lock.json
+# Prisma generated client
+src/generated/
