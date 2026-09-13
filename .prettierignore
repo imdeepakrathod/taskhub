@@ -4,3 +4,13 @@ build
 coverage
 package-lock.json
 backend/src/generated
+# Prisma-generated client
+backend/src/generated
+
+# Tool-installed agent skills (not our code)
+**/.agents
+
+# Build output
+dist
+build
+coverage
