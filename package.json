@@ -18,9 +18,10 @@
       "eslint --fix --max-warnings=0"
     ],
     "backend/*.{ts,js}": [
-      "prettier --write"
+      "prettier --write",
+      "eslint --fix --max-warnings=0"
     ],
-    "**/*.{json,md,css}": [
+    "**/*.{json,md,css,yml,yaml}": [
       "prettier --write"
     ]
   }
