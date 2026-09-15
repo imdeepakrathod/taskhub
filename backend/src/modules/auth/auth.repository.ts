@@ -29,3 +29,16 @@ export async function createUser(data: CreateUserData) {
     },
   })
 }
+
+export async function findUserCredentialsByEmail(email: string) {
+  return prisma.user.findUnique({
+    where: { email },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      passwordHash: true,
+      createdAt: true,
+    },
+  })
+}
