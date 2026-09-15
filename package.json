@@ -23,6 +23,10 @@
     ],
     "**/*.{json,md,css,yml,yaml}": [
       "prettier --write"
+    ],
+    "backend/src/*.ts": [
+      "prettier --write",
+      "eslint --fix --max-warnings=0"
     ]
   }
 }

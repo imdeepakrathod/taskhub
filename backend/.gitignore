@@ -3,7 +3,6 @@ dist/
 build/
 coverage/
 .env
-.env.*
 !.env.example
 *.log
 logs/
@@ -18,4 +17,4 @@ src/generated/prisma/*
 .windsurf/
 skills-lock.json
 # Prisma generated client
-src/generated/
+.env.test
