@@ -14,11 +14,19 @@ jobs:
   quality:
     name: Lint, format & typecheck
     runs-on: ubuntu-latest
+    JWT_ACCESS_SECRET: ci-access-secret-value-that-is-long-enough-000000
+    JWT_REFRESH_SECRET: ci-refresh-secret-value-that-is-long-enough-00000
+    JWT_ACCESS_EXPIRES_IN: 15m
+    JWT_REFRESH_EXPIRES_IN: 7d
 
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/taskhub_ci?schema=public
       CLIENT_URL: http://localhost:5173
       NODE_ENV: test
+      JWT_ACCESS_SECRET: ci-access-secret-value-that-is-long-enough-000000
+      JWT_REFRESH_SECRET: ci-refresh-secret-value-that-is-long-enough-00000
+      JWT_ACCESS_EXPIRES_IN: 15m
+      JWT_REFRESH_EXPIRES_IN: 7d
 
     steps:
       - uses: actions/checkout@v4

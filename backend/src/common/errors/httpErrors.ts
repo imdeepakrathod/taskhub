@@ -17,3 +17,9 @@ export class ConflictError extends AppError {
     super(message, 409, code)
   }
 }
+
+export class UnauthorizedError extends AppError {
+  constructor(message: string, code: string, details?: unknown) {
+    super(message, 401, code, details)
+  }
+}

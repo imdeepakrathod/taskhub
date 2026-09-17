@@ -22,4 +22,18 @@ export const registerBodySchema = z
   })
   .strict()
 
+export const loginBodySchema = z
+  .object({
+    email: z
+      .string()
+      .trim()
+      .email('A valid email address is required')
+      .max(255)
+      .transform((email) => email.toLowerCase()),
+
+    password: z.string().min(1, 'Password is required').max(128),
+  })
+  .strict()
+
+export type LoginInput = z.infer<typeof loginBodySchema>
 export type RegisterInput = z.infer<typeof registerBodySchema>
