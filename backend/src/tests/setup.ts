@@ -16,7 +16,12 @@ if (!databaseUrl.includes('taskhub_test')) {
 const { prisma } = await import('../config/database.js')
 
 beforeEach(async () => {
-  await prisma.user.deleteMany()
+  await prisma.$transaction([
+    prisma.workspaceMember.deleteMany(),
+    prisma.workspace.deleteMany(),
+    prisma.refreshToken.deleteMany(),
+    prisma.user.deleteMany(),
+  ])
 })
 
 afterAll(async () => {
