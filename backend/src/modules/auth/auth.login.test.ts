@@ -1,5 +1,7 @@
 import request from 'supertest'
 import { beforeEach, describe, expect, it } from 'vitest'
+import { REFRESH_TOKEN_COOKIE } from '../../common/utils/authCookies.js'
+import { getSetCookieHeader } from '../../tests/testCookies.js'
 
 import app from '../../app.js'
 
@@ -68,6 +70,23 @@ describe(`POST ${loginEndpoint}`, () => {
 
     expect(res.status).toBe(400)
     expect(res.body.error.code).toBe('VALIDATION_ERROR')
+  })
+
+  it('returns an access token and sets an httpOnly refresh cookie', async () => {
+    const res = await request(app).post(loginEndpoint).send({
+      email: credentials.email,
+      password: credentials.password,
+    })
+
+    expect(res.status).toBe(200)
+    expect(res.body.data.accessToken.split('.')).toHaveLength(3)
+    expect(res.body.data.user.email).toBe(credentials.email)
+    expect(res.body.data.user).not.toHaveProperty('passwordHash')
+
+    const cookieHeader = getSetCookieHeader(res.headers['set-cookie'], REFRESH_TOKEN_COOKIE)
+
+    expect(cookieHeader).toContain(`${REFRESH_TOKEN_COOKIE}=`)
+    expect(cookieHeader.toLowerCase()).toContain('httponly')
   })
 })
 
