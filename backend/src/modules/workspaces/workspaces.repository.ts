@@ -41,3 +41,26 @@ export async function createWorkspaceWithOwner(data: CreateWorkspaceWithOwnerDat
     }
   })
 }
+
+export async function findUserWorkspaces(userId: string) {
+  return prisma.workspaceMember.findMany({
+    where: {
+      userId,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+    select: {
+      role: true,
+      workspace: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
+    },
+  })
+}
