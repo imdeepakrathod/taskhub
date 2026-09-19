@@ -8,6 +8,7 @@ import { prisma } from './config/database.js'
 import { env } from './config/env.js'
 import { errorHandler } from './middlewares/errorHandler.js'
 import authRouter from './modules/auth/auth.routes.js'
+import cookieParser from 'cookie-parser'
 
 const app = express()
 
@@ -24,6 +25,7 @@ app.use(
 
 app.use(compression())
 app.use(express.json({ limit: '1mb' }))
+app.use(cookieParser())
 
 app.get('/health', (_req, res) => {
   res.status(200).json({
