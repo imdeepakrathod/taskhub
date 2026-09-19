@@ -4,8 +4,8 @@ import { Prisma } from '../../generated/prisma/client.js'
 
 import { createSlug } from '../../common/utils/slug.js'
 
-import { createWorkspaceWithOwner } from './workspaces.repository.js'
 import type { CreateWorkspaceInput } from './workspaces.schema.js'
+import { createWorkspaceWithOwner, findUserWorkspaces } from './workspaces.repository.js'
 
 const MAX_SLUG_ATTEMPTS = 5
 
@@ -43,4 +43,13 @@ export async function createWorkspace(ownerId: string, input: CreateWorkspaceInp
   }
 
   throw new Error('Unable to generate a unique workspace slug')
+}
+
+export async function listUserWorkspaces(userId: string) {
+  const memberships = await findUserWorkspaces(userId)
+
+  return memberships.map(({ role, workspace }) => ({
+    ...workspace,
+    role,
+  }))
 }
