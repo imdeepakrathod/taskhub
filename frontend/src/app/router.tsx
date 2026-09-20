@@ -1,0 +1,40 @@
+import { Navigate, createBrowserRouter } from 'react-router-dom'
+
+import { GuestRoute, ProtectedRoute } from '../features/auth'
+import { DashboardPage } from '../pages/DashboardPage'
+import { LoginPage } from '../pages/LoginPage'
+import { NotFoundPage } from '../pages/NotFoundPage'
+import { RegisterPage } from '../pages/RegisterPage'
+
+export const router = createBrowserRouter([
+  {
+    element: <GuestRoute />,
+    children: [
+      {
+        path: '/login',
+        element: <LoginPage />,
+      },
+      {
+        path: '/register',
+        element: <RegisterPage />,
+      },
+    ],
+  },
+  {
+    element: <ProtectedRoute />,
+    children: [
+      {
+        path: '/',
+        element: <Navigate to="/dashboard" replace />,
+      },
+      {
+        path: '/dashboard',
+        element: <DashboardPage />,
+      },
+    ],
+  },
+  {
+    path: '*',
+    element: <NotFoundPage />,
+  },
+])
