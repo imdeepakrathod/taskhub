@@ -19,11 +19,4 @@ workspacesRouter.post(
 
 workspacesRouter.get('/', authenticate, asyncHandler(listWorkspacesController))
 
-workspacesRouter.post(
-  '/',
-  authenticate,
-  validateBody(createWorkspaceBodySchema),
-  asyncHandler(createWorkspaceController),
-)
-
 export default workspacesRouter
