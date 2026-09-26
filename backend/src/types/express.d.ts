@@ -5,6 +5,10 @@ declare global {
         id: string
         email: string
       }
+      membership?: {
+        workspaceId: string
+        role: 'OWNER' | 'ADMIN' | 'MEMBER'
+      }
     }
   }
 }
