@@ -8,10 +8,10 @@ const registerEndpoint = '/api/v1/auth/register'
 const loginEndpoint = '/api/v1/auth/login'
 const workspacesEndpoint = '/api/v1/workspaces'
 
-const DUMMY_TEST_PASS = 'test-user-local-01'
+const demoCredentialValue = 'xK8!uR3@qN6#'
 
 async function createAuthenticatedUser(name = 'Test User', email = 'test@example.com') {
-  const password = DUMMY_TEST_PASS
+  const password = demoCredentialValue
 
   await request(app).post(registerEndpoint).send({ name, email, password })
 
