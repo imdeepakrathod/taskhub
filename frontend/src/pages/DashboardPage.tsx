@@ -1,130 +1,50 @@
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
+import { useState } from 'react'
 
-import { getAuthErrorMessage } from '../features/auth/api/getAuthErrorMessage'
-import { useAuth } from '../features/auth/hooks/useAuth'
-import { useCreateWorkspace, useWorkspaces } from '../features/workspaces'
-import {
-  createWorkspaceSchema,
-  type CreateWorkspaceFormValues,
-} from '../features/workspaces/schemas/workspaceSchemas'
-
-import './DashboardPage.css'
+import { AppLayout } from '../components/layout/AppLayout'
+import { ProjectList } from '../features/projects'
+import { useWorkspaces } from '../features/workspaces'
 
 export function DashboardPage() {
-  const { user, logout } = useAuth()
+  const { data: workspaces = [], isLoading, isError } = useWorkspaces()
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | null>(null)
 
-  const { data: workspaces, isLoading, isError } = useWorkspaces()
-  const createWorkspaceMutation = useCreateWorkspace()
+  const activeWorkspace =
+    workspaces.find((w) => w.id === selectedWorkspaceId) ?? workspaces[0] ?? null
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<CreateWorkspaceFormValues>({
-    resolver: zodResolver(createWorkspaceSchema),
-    defaultValues: { name: '' },
-  })
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <p className="text-sm font-medium text-gray-500">Loading TaskHub...</p>
+      </div>
+    )
+  }
 
-  const handleCreateWorkspace = handleSubmit(async (values) => {
-    try {
-      await createWorkspaceMutation.mutateAsync(values)
-      reset()
-    } catch {
-      // Mutation state renders the API error below.
-    }
-  })
+  if (isError) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center text-sm text-red-600">
+          Failed to load workspaces. Please refresh the page.
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <main className="dashboard-page">
-      <div className="dashboard-shell">
-        <header className="dashboard-topbar">
-          <div>
-            <h1>TaskHub Dashboard</h1>
-            <p>
-              Signed in as {user?.name} ({user?.email})
-            </p>
-          </div>
-
-          <button
-            type="button"
-            className="dashboard-logout"
-            onClick={() => {
-              void logout()
-            }}
-          >
-            Log out
-          </button>
-        </header>
-
-        <section className="dashboard-card">
-          <h2>Your workspaces</h2>
-
-          {isLoading ? <p className="dashboard-loading">Loading workspaces...</p> : null}
-
-          {isError ? (
-            <div className="dashboard-alert" role="alert">
-              Could not load workspaces. Try again.
-            </div>
-          ) : null}
-
-          {!isLoading && !isError && workspaces?.length === 0 ? (
-            <p className="dashboard-empty">
-              You don&apos;t belong to any workspace yet. Create one below.
-            </p>
-          ) : null}
-
-          {workspaces && workspaces.length > 0 ? (
-            <ul className="workspace-list">
-              {workspaces.map((workspace) => (
-                <li key={workspace.id} className="workspace-item">
-                  <span className="workspace-item__name">{workspace.name}</span>
-                  <span className="workspace-item__role">{workspace.role.toLowerCase()}</span>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </section>
-
-        <section className="dashboard-card">
-          <h2>Create a workspace</h2>
-
-          <form className="dashboard-form" onSubmit={handleCreateWorkspace} noValidate>
-            {createWorkspaceMutation.error ? (
-              <div className="dashboard-alert" role="alert">
-                {getAuthErrorMessage(createWorkspaceMutation.error)}
-              </div>
-            ) : null}
-
-            <div className="dashboard-field">
-              <label htmlFor="workspace-name">Workspace name</label>
-
-              <input
-                id="workspace-name"
-                type="text"
-                aria-invalid={errors.name ? 'true' : 'false'}
-                aria-describedby={errors.name ? 'workspace-name-error' : undefined}
-                {...register('name')}
-              />
-
-              {errors.name ? (
-                <p id="workspace-name-error" className="dashboard-field__error">
-                  {errors.name.message}
-                </p>
-              ) : null}
-            </div>
-
-            <button
-              type="submit"
-              className="dashboard-submit"
-              disabled={createWorkspaceMutation.isPending}
-            >
-              {createWorkspaceMutation.isPending ? 'Creating...' : 'Create workspace'}
-            </button>
-          </form>
-        </section>
-      </div>
-    </main>
+    <AppLayout
+      workspaces={workspaces}
+      activeWorkspace={activeWorkspace}
+      onSelectWorkspace={(id) => setSelectedWorkspaceId(id)}
+    >
+      {activeWorkspace ? (
+        <ProjectList workspaceId={activeWorkspace.id} workspaceName={activeWorkspace.name} />
+      ) : (
+        <div className="rounded-xl border-2 border-dashed border-gray-200 p-12 text-center">
+          <h3 className="text-base font-semibold text-gray-900">No workspace selected</h3>
+          <p className="mt-1 text-sm text-gray-500">
+            Create or select a workspace from the sidebar to view its projects.
+          </p>
+        </div>
+      )}
+    </AppLayout>
   )
 }
