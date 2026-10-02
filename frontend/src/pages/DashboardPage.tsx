@@ -1,15 +1,22 @@
 import { useState } from 'react'
 
 import { AppLayout } from '../components/layout/AppLayout'
-import { ProjectList } from '../features/projects'
+import { ProjectList, type Project } from '../features/projects'
+import { KanbanBoard } from '../features/tasks'
 import { useWorkspaces } from '../features/workspaces'
 
 export function DashboardPage() {
   const { data: workspaces = [], isLoading, isError } = useWorkspaces()
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | null>(null)
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
 
   const activeWorkspace =
     workspaces.find((w) => w.id === selectedWorkspaceId) ?? workspaces[0] ?? null
+
+  const handleSelectWorkspace = (id: string) => {
+    setSelectedWorkspaceId(id)
+    setSelectedProject(null) // Reset project when switching workspaces
+  }
 
   if (isLoading) {
     return (
@@ -33,10 +40,20 @@ export function DashboardPage() {
     <AppLayout
       workspaces={workspaces}
       activeWorkspace={activeWorkspace}
-      onSelectWorkspace={(id) => setSelectedWorkspaceId(id)}
+      onSelectWorkspace={handleSelectWorkspace}
     >
-      {activeWorkspace ? (
-        <ProjectList workspaceId={activeWorkspace.id} workspaceName={activeWorkspace.name} />
+      {selectedProject ? (
+        <KanbanBoard
+          projectId={selectedProject.id}
+          projectName={selectedProject.name}
+          onBack={() => setSelectedProject(null)}
+        />
+      ) : activeWorkspace ? (
+        <ProjectList
+          workspaceId={activeWorkspace.id}
+          workspaceName={activeWorkspace.name}
+          onSelectProject={(project) => setSelectedProject(project)}
+        />
       ) : (
         <div className="rounded-xl border-2 border-dashed border-gray-200 p-12 text-center">
           <h3 className="text-base font-semibold text-gray-900">No workspace selected</h3>
