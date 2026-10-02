@@ -12,6 +12,7 @@ import cookieParser from 'cookie-parser'
 import workspacesRouter from './modules/workspaces/workspaces.routes.js'
 import projectsRouter from './modules/projects/projects.routes.js'
 import tasksRouter from './modules/tasks/tasks.routes.js'
+import membersRouter from './modules/members/members.routes.js'
 
 const app = express()
 
@@ -56,6 +57,7 @@ app.get('/ready', async (_req, res) => {
 app.use('/api/v1/auth', authRouter)
 app.use('/api/v1/workspaces', workspacesRouter)
 app.use('/api/v1/workspaces/:workspaceId/projects', projectsRouter)
+app.use('/api/v1/workspaces/:workspaceId/members', membersRouter)
 app.use('/api/v1/projects/:projectId/tasks', tasksRouter)
 
 app.use((_req, _res, next) => {
