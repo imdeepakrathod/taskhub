@@ -10,4 +10,7 @@ export const queryKeys = {
     all: ['tasks'] as const,
     byProject: (projectId: string) => ['tasks', projectId] as const,
   },
+  members: {
+    byWorkspace: (workspaceId: string) => ['members', workspaceId] as const,
+  },
 } as const

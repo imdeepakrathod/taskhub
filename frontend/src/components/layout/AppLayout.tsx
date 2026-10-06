@@ -4,17 +4,23 @@ import { useAuth } from '../../features/auth/hooks/useAuth'
 import { CreateWorkspaceModal } from '../../features/workspaces'
 import type { Workspace } from '../../features/workspaces/types'
 
+export type AppView = 'projects' | 'team'
+
 type AppLayoutProps = {
   workspaces: Workspace[]
   activeWorkspace: Workspace | null
+  activeView: AppView
   onSelectWorkspace: (workspaceId: string) => void
+  onNavigate: (view: AppView) => void
   children: React.ReactNode
 }
 
 export function AppLayout({
   workspaces,
   activeWorkspace,
+  activeView,
   onSelectWorkspace,
+  onNavigate,
   children,
 }: AppLayoutProps) {
   const { user, logout } = useAuth()
@@ -98,20 +104,30 @@ export function AppLayout({
 
           {/* Navigation Links */}
           <nav className="px-3 py-2 space-y-1 text-sm font-medium">
-            <a
-              href="#projects"
-              className="flex items-center gap-2.5 rounded-lg bg-indigo-50 px-3 py-2 text-indigo-700 font-semibold"
+            <button
+              type="button"
+              onClick={() => onNavigate('projects')}
+              className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 transition ${
+                activeView === 'projects'
+                  ? 'bg-indigo-50 text-indigo-700 font-semibold'
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              }`}
             >
               <span>📁</span>
               <span>Projects</span>
-            </a>
+            </button>
+
             <button
               type="button"
-              onClick={() => setShowCreateWs(true)}
-              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition"
+              onClick={() => onNavigate('team')}
+              className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 transition ${
+                activeView === 'team'
+                  ? 'bg-indigo-50 text-indigo-700 font-semibold'
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              }`}
             >
-              <span>➕</span>
-              <span>Add Workspace</span>
+              <span>👥</span>
+              <span>Team</span>
             </button>
           </nav>
         </div>
@@ -145,6 +161,12 @@ export function AppLayout({
             <span className="font-semibold text-gray-900">
               {activeWorkspace?.name ?? 'Dashboard'}
             </span>
+            {activeView === 'team' && (
+              <>
+                <span>/</span>
+                <span className="font-semibold text-gray-900">Team</span>
+              </>
+            )}
           </div>
         </header>
 
