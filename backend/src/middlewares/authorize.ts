@@ -125,3 +125,73 @@ export function authorizeProjectMember(requiredRoles?: WorkspaceRole[]): Request
     }
   }
 }
+
+export function authorizeTaskAccess(requiredRoles?: WorkspaceRole[]): RequestHandler {
+  return async (req, _res, next) => {
+    try {
+      if (!req.user) {
+        next(new UnauthorizedError('Authentication required', 'UNAUTHENTICATED'))
+
+        return
+      }
+
+      const taskId = req.params.taskId
+
+      if (!taskId || typeof taskId !== 'string') {
+        next(new NotFoundError('Task not found', 'TASK_NOT_FOUND'))
+
+        return
+      }
+
+      const task = await prisma.task.findUnique({
+        where: { id: taskId },
+        select: {
+          project: {
+            select: { workspaceId: true },
+          },
+        },
+      })
+
+      if (!task) {
+        next(new NotFoundError('Task not found', 'TASK_NOT_FOUND'))
+
+        return
+      }
+
+      const membership = await prisma.workspaceMember.findUnique({
+        where: {
+          workspaceId_userId: {
+            workspaceId: task.project.workspaceId,
+            userId: req.user.id,
+          },
+        },
+        select: {
+          role: true,
+        },
+      })
+
+      if (!membership) {
+        next(
+          new ForbiddenError('You are not a member of this workspace', 'WORKSPACE_ACCESS_DENIED'),
+        )
+
+        return
+      }
+
+      if (requiredRoles && requiredRoles.length > 0 && !requiredRoles.includes(membership.role)) {
+        next(new ForbiddenError('Insufficient permissions', 'INSUFFICIENT_PERMISSIONS'))
+
+        return
+      }
+
+      req.membership = {
+        workspaceId: task.project.workspaceId,
+        role: membership.role,
+      }
+
+      next()
+    } catch (error) {
+      next(error)
+    }
+  }
+}
