@@ -11,15 +11,22 @@ type TaskCardProps = {
   task: Task
   onStatusChange: (taskId: string, status: TaskStatus) => void
   onDelete: (taskId: string) => void
+  onClick: (task: Task) => void
 }
 
-export function TaskCard({ task, onStatusChange, onDelete }: TaskCardProps) {
+export function TaskCard({ task, onStatusChange, onDelete, onClick }: TaskCardProps) {
   return (
-    <div className="group rounded-lg border border-gray-200 bg-white p-3.5 shadow-2xs hover:border-gray-300 hover:shadow-xs transition">
+    <div
+      onClick={() => onClick(task)}
+      className="group rounded-lg border border-gray-200 bg-white p-3.5 shadow-2xs hover:border-indigo-300 hover:shadow-xs cursor-pointer transition"
+    >
       <div className="flex items-start justify-between gap-2">
         <h4 className="font-medium text-sm text-gray-900 leading-snug">{task.title}</h4>
         <button
-          onClick={() => onDelete(task.id)}
+          onClick={(e) => {
+            e.stopPropagation()
+            onDelete(task.id)
+          }}
           title="Delete task"
           className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-600 text-xs transition"
         >
@@ -40,10 +47,13 @@ export function TaskCard({ task, onStatusChange, onDelete }: TaskCardProps) {
           {task.priority.toLowerCase()}
         </span>
 
-        {/* Quick status selector */}
         <select
           value={task.status}
-          onChange={(e) => onStatusChange(task.id, e.target.value as TaskStatus)}
+          onClick={(e) => e.stopPropagation()}
+          onChange={(e) => {
+            e.stopPropagation()
+            onStatusChange(task.id, e.target.value as TaskStatus)
+          }}
           className="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[11px] text-gray-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
         >
           <option value="TODO">To Do</option>

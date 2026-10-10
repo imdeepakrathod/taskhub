@@ -1,6 +1,7 @@
 export * from './api/tasksApi'
 export * from './components/KanbanBoard'
 export * from './components/TaskCard'
+export * from './components/TaskDetailPanel'
 export * from './hooks/useTaskMutations'
 export * from './hooks/useTasks'
 export * from './schemas/taskSchemas'

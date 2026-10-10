@@ -2,9 +2,10 @@ import { useState } from 'react'
 
 import { useTaskMutations } from '../hooks/useTaskMutations'
 import { useTasks } from '../hooks/useTasks'
-import type { TaskStatus } from '../types'
+import type { Task, TaskStatus } from '../types'
 import { CreateTaskModal } from './CreateTaskModal'
 import { TaskCard } from './TaskCard'
+import { TaskDetailPanel } from './TaskDetailPanel'
 
 const COLUMNS: { id: TaskStatus; label: string; dotColor: string }[] = [
   { id: 'TODO', label: 'To Do', dotColor: 'bg-gray-400' },
@@ -25,6 +26,7 @@ export function KanbanBoard({ projectId, projectName, onBack }: KanbanBoardProps
 
   const [modalOpen, setModalOpen] = useState(false)
   const [targetColumn, setTargetColumn] = useState<TaskStatus>('TODO')
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null)
 
   const openCreateForColumn = (status: TaskStatus) => {
     setTargetColumn(status)
@@ -36,12 +38,20 @@ export function KanbanBoard({ projectId, projectName, onBack }: KanbanBoardProps
   }
 
   const handleDelete = (taskId: string) => {
+    if (selectedTask?.id === taskId) {
+      setSelectedTask(null)
+    }
     void deleteTask(taskId)
   }
 
+  // Keep panel in sync with fresh data from React Query
+  const activeTask = selectedTask
+    ? (tasks.find((t) => t.id === selectedTask.id) ?? selectedTask)
+    : null
+
   return (
     <div className="space-y-6">
-      {/* Header with Back button and Actions */}
+      {/* Header */}
       <div className="flex items-center justify-between border-b border-gray-200 pb-4">
         <div className="flex items-center gap-3">
           <button
@@ -74,7 +84,6 @@ export function KanbanBoard({ projectId, projectName, onBack }: KanbanBoardProps
               key={col.id}
               className="flex flex-col rounded-xl border border-gray-200 bg-gray-50/70 p-3"
             >
-              {/* Column Header */}
               <div className="flex items-center justify-between px-1 pb-3">
                 <div className="flex items-center gap-2">
                   <span className={`h-2.5 w-2.5 rounded-full ${col.dotColor}`} />
@@ -92,7 +101,6 @@ export function KanbanBoard({ projectId, projectName, onBack }: KanbanBoardProps
                 </button>
               </div>
 
-              {/* Cards Container */}
               <div className="flex-1 space-y-2.5 min-h-[300px]">
                 {colTasks.map((task) => (
                   <TaskCard
@@ -100,6 +108,7 @@ export function KanbanBoard({ projectId, projectName, onBack }: KanbanBoardProps
                     task={task}
                     onStatusChange={handleStatusChange}
                     onDelete={handleDelete}
+                    onClick={setSelectedTask}
                   />
                 ))}
 
@@ -122,6 +131,15 @@ export function KanbanBoard({ projectId, projectName, onBack }: KanbanBoardProps
           await createTask(data)
         }}
       />
+
+      {/* Task Detail Panel */}
+      {activeTask && (
+        <TaskDetailPanel
+          task={activeTask}
+          projectId={projectId}
+          onClose={() => setSelectedTask(null)}
+        />
+      )}
     </div>
   )
 }
