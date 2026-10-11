@@ -1,12 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 
+import type { Member } from '../../members/types'
 import { createTaskSchema, type CreateTaskFormData } from '../schemas/taskSchemas'
 import type { TaskStatus } from '../types'
 
 type CreateTaskModalProps = {
   isOpen: boolean
   defaultStatus?: TaskStatus
+  members: Member[]
   onClose: () => void
   onSubmitTask: (data: CreateTaskFormData) => Promise<void>
 }
@@ -14,6 +16,7 @@ type CreateTaskModalProps = {
 export function CreateTaskModal({
   isOpen,
   defaultStatus = 'TODO',
+  members,
   onClose,
   onSubmitTask,
 }: CreateTaskModalProps) {
@@ -29,13 +32,19 @@ export function CreateTaskModal({
       description: '',
       status: defaultStatus,
       priority: 'MEDIUM',
+      assigneeId: null,
     },
   })
 
   if (!isOpen) return null
 
   const onSubmit = async (data: CreateTaskFormData) => {
-    await onSubmitTask(data)
+    // Convert empty string from select to null
+    const payload = {
+      ...data,
+      assigneeId: data.assigneeId || null,
+    }
+    await onSubmitTask(payload)
     reset()
     onClose()
   }
@@ -108,6 +117,23 @@ export function CreateTaskModal({
                 <option value="DONE">Done</option>
               </select>
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-600">
+              Assignee
+            </label>
+            <select
+              {...register('assigneeId')}
+              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-600 focus:outline-none focus:ring-1 focus:ring-indigo-600"
+            >
+              <option value="">Unassigned</option>
+              {members.map((member) => (
+                <option key={member.user.id} value={member.user.id}>
+                  {member.user.name} ({member.user.email})
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="flex justify-end gap-2.5 pt-3 border-t border-gray-100">

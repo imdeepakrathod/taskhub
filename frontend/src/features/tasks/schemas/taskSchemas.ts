@@ -12,6 +12,7 @@ export const createTaskSchema = z.object({
   description: z.string().trim().optional(),
   status: taskStatusEnum,
   priority: taskPriorityEnum,
+  assigneeId: z.string().uuid().nullable().optional(),
 })
 
 export type CreateTaskFormData = z.infer<typeof createTaskSchema>
