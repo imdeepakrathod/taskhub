@@ -73,6 +73,7 @@ export function DashboardPage() {
         <KanbanBoard
           projectId={selectedProject.id}
           projectName={selectedProject.name}
+          workspaceId={activeWorkspace.id}
           onBack={() => setSelectedProject(null)}
         />
       )

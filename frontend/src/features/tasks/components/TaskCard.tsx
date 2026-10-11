@@ -7,6 +7,15 @@ const priorityStyles: Record<TaskPriority, string> = {
   URGENT: 'bg-red-50 text-red-700 border-red-200 font-semibold',
 }
 
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
+}
+
 type TaskCardProps = {
   task: Task
   onStatusChange: (taskId: string, status: TaskStatus) => void
@@ -39,13 +48,24 @@ export function TaskCard({ task, onStatusChange, onDelete, onClick }: TaskCardPr
       )}
 
       <div className="mt-3 flex items-center justify-between pt-2 border-t border-gray-100 text-xs">
-        <span
-          className={`rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wider ${
-            priorityStyles[task.priority]
-          }`}
-        >
-          {task.priority.toLowerCase()}
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span
+            className={`rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wider ${
+              priorityStyles[task.priority]
+            }`}
+          >
+            {task.priority.toLowerCase()}
+          </span>
+
+          {task.assignee && (
+            <span
+              title={`Assigned to ${task.assignee.name}`}
+              className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-100 text-[9px] font-bold text-indigo-700 border border-indigo-200"
+            >
+              {getInitials(task.assignee.name)}
+            </span>
+          )}
+        </div>
 
         <select
           value={task.status}

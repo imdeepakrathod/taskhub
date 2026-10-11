@@ -1,7 +1,9 @@
 import { useAuth } from '../../auth/hooks/useAuth'
 import { CommentThread } from '../../comments'
+import type { Member } from '../../members/types'
 import { useTaskMutations } from '../hooks/useTaskMutations'
 import type { Task, TaskPriority, TaskStatus } from '../types'
+
 const statusLabels: Record<TaskStatus, string> = {
   BACKLOG: 'Backlog',
   TODO: 'To Do',
@@ -27,10 +29,11 @@ const priorityDotColors: Record<TaskPriority, string> = {
 type TaskDetailPanelProps = {
   task: Task
   projectId: string
+  members: Member[]
   onClose: () => void
 }
 
-export function TaskDetailPanel({ task, projectId, onClose }: TaskDetailPanelProps) {
+export function TaskDetailPanel({ task, projectId, members, onClose }: TaskDetailPanelProps) {
   const { user } = useAuth()
   const { updateTask } = useTaskMutations(projectId)
 
@@ -40,6 +43,13 @@ export function TaskDetailPanel({ task, projectId, onClose }: TaskDetailPanelPro
 
   const handlePriorityChange = (priority: TaskPriority) => {
     void updateTask({ taskId: task.id, input: { priority } })
+  }
+
+  const handleAssigneeChange = (assigneeId: string) => {
+    void updateTask({
+      taskId: task.id,
+      input: { assigneeId: assigneeId || null },
+    })
   }
 
   return (
@@ -104,26 +114,34 @@ export function TaskDetailPanel({ task, projectId, onClose }: TaskDetailPanelPro
               </div>
             </div>
 
-            {/* Meta Info */}
-            <div className="grid grid-cols-2 gap-4 text-xs">
-              <div>
-                <span className="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
-                  Priority Level
-                </span>
-                <div className="flex items-center gap-1.5">
-                  <span className={`h-2 w-2 rounded-full ${priorityDotColors[task.priority]}`} />
-                  <span className="font-medium text-gray-700">{priorityLabels[task.priority]}</span>
-                </div>
-              </div>
+            {/* Assignee Row */}
+            <div>
+              <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
+                Assignee
+              </label>
+              <select
+                value={task.assigneeId ?? ''}
+                onChange={(e) => handleAssigneeChange(e.target.value)}
+                className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+              >
+                <option value="">Unassigned</option>
+                {members.map((member) => (
+                  <option key={member.user.id} value={member.user.id}>
+                    {member.user.name} ({member.user.email})
+                  </option>
+                ))}
+              </select>
+            </div>
 
-              {task.assignee && (
-                <div>
-                  <span className="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
-                    Assignee
-                  </span>
-                  <span className="font-medium text-gray-700">{task.assignee.name}</span>
-                </div>
-              )}
+            {/* Meta Info */}
+            <div className="flex items-center gap-2 text-xs">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+                Priority Indicator:
+              </span>
+              <div className="flex items-center gap-1.5">
+                <span className={`h-2 w-2 rounded-full ${priorityDotColors[task.priority]}`} />
+                <span className="font-medium text-gray-700">{priorityLabels[task.priority]}</span>
+              </div>
             </div>
 
             {/* Description */}
