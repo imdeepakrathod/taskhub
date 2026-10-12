@@ -48,6 +48,17 @@ const taskSelect = {
       email: true,
     },
   },
+  taskLabels: {
+    select: {
+      label: {
+        select: {
+          id: true,
+          name: true,
+          color: true,
+        },
+      },
+    },
+  },
 }
 
 export async function getNextTaskPosition(projectId: string): Promise<number> {
