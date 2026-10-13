@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 
+import { ManageLabelsModal, useLabels } from '../../labels'
 import { useMembers } from '../../members/hooks/useMembers'
 import { useTaskMutations } from '../hooks/useTaskMutations'
 import { useTasks } from '../hooks/useTasks'
@@ -25,14 +26,17 @@ type KanbanBoardProps = {
 export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: KanbanBoardProps) {
   const { data: tasks = [], isLoading, error } = useTasks(projectId)
   const { data: members = [] } = useMembers(workspaceId)
+  const { data: labels = [] } = useLabels(workspaceId)
   const { createTask, updateTask, deleteTask } = useTaskMutations(projectId)
 
   // Filters state
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedPriority, setSelectedPriority] = useState<TaskPriority | 'ALL'>('ALL')
   const [selectedAssignee, setSelectedAssignee] = useState<string>('ALL')
+  const [selectedLabel, setSelectedLabel] = useState<string>('ALL')
 
   const [modalOpen, setModalOpen] = useState(false)
+  const [labelsModalOpen, setLabelsModalOpen] = useState(false)
   const [targetColumn, setTargetColumn] = useState<TaskStatus>('TODO')
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
 
@@ -60,17 +64,27 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
         if (task.assigneeId !== selectedAssignee) return false
       }
 
+      // 4. Label Filter
+      if (selectedLabel !== 'ALL') {
+        const hasLabel = task.taskLabels?.some((tl) => tl.label.id === selectedLabel)
+        if (!hasLabel) return false
+      }
+
       return true
     })
-  }, [tasks, searchQuery, selectedPriority, selectedAssignee])
+  }, [tasks, searchQuery, selectedPriority, selectedAssignee, selectedLabel])
 
   const hasActiveFilters =
-    searchQuery.trim() !== '' || selectedPriority !== 'ALL' || selectedAssignee !== 'ALL'
+    searchQuery.trim() !== '' ||
+    selectedPriority !== 'ALL' ||
+    selectedAssignee !== 'ALL' ||
+    selectedLabel !== 'ALL'
 
   const clearFilters = () => {
     setSearchQuery('')
     setSelectedPriority('ALL')
     setSelectedAssignee('ALL')
+    setSelectedLabel('ALL')
   }
 
   const openCreateForColumn = (status: TaskStatus) => {
@@ -107,12 +121,20 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
           <h2 className="text-xl font-bold text-gray-900">{projectName} Board</h2>
         </div>
 
-        <button
-          onClick={() => openCreateForColumn('TODO')}
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 shadow-xs transition"
-        >
-          + Add Task
-        </button>
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => setLabelsModalOpen(true)}
+            className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 shadow-2xs transition"
+          >
+            🏷️ Labels
+          </button>
+          <button
+            onClick={() => openCreateForColumn('TODO')}
+            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 shadow-xs transition"
+          >
+            + Add Task
+          </button>
+        </div>
       </div>
 
       {/* Filter Toolbar */}
@@ -161,6 +183,20 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
             {members.map((m) => (
               <option key={m.user.id} value={m.user.id}>
                 {m.user.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Label Filter */}
+          <select
+            value={selectedLabel}
+            onChange={(e) => setSelectedLabel(e.target.value)}
+            className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+          >
+            <option value="ALL">All Labels</option>
+            {labels.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.name}
               </option>
             ))}
           </select>
@@ -242,11 +278,17 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
         }}
       />
 
-      {/* Task Detail Panel */}
+      <ManageLabelsModal
+        isOpen={labelsModalOpen}
+        workspaceId={workspaceId}
+        onClose={() => setLabelsModalOpen(false)}
+      />
+
       {activeTask && (
         <TaskDetailPanel
           task={activeTask}
           projectId={projectId}
+          workspaceId={workspaceId}
           members={members}
           onClose={() => setSelectedTask(null)}
         />

@@ -16,4 +16,7 @@ export const queryKeys = {
   comments: {
     byTask: (taskId: string) => ['comments', taskId] as const,
   },
+  labels: {
+    byWorkspace: (workspaceId: string) => ['labels', workspaceId] as const,
+  },
 } as const

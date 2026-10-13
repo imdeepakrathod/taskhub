@@ -1,5 +1,6 @@
 import { useAuth } from '../../auth/hooks/useAuth'
 import { CommentThread } from '../../comments'
+import { LabelBadge, useLabelMutations, useLabels } from '../../labels'
 import type { Member } from '../../members/types'
 import { useTaskMutations } from '../hooks/useTaskMutations'
 import type { Task, TaskPriority, TaskStatus } from '../types'
@@ -29,13 +30,25 @@ const priorityDotColors: Record<TaskPriority, string> = {
 type TaskDetailPanelProps = {
   task: Task
   projectId: string
+  workspaceId: string
   members: Member[]
   onClose: () => void
 }
 
-export function TaskDetailPanel({ task, projectId, members, onClose }: TaskDetailPanelProps) {
+export function TaskDetailPanel({
+  task,
+  projectId,
+  workspaceId,
+  members,
+  onClose,
+}: TaskDetailPanelProps) {
   const { user } = useAuth()
   const { updateTask } = useTaskMutations(projectId)
+  const { data: allLabels = [] } = useLabels(workspaceId)
+  const { attachLabel, detachLabel } = useLabelMutations(workspaceId, projectId)
+
+  const attachedLabelIds = new Set(task.taskLabels?.map((tl) => tl.label.id) ?? [])
+  const unattachedLabels = allLabels.filter((l) => !attachedLabelIds.has(l.id))
 
   const handleStatusChange = (status: TaskStatus) => {
     void updateTask({ taskId: task.id, input: { status } })
@@ -52,14 +65,20 @@ export function TaskDetailPanel({ task, projectId, members, onClose }: TaskDetai
     })
   }
 
+  const handleAttachLabel = (labelId: string) => {
+    if (!labelId) return
+    void attachLabel({ taskId: task.id, labelId })
+  }
+
+  const handleDetachLabel = (labelId: string) => {
+    void detachLabel({ taskId: task.id, labelId })
+  }
+
   return (
     <>
-      {/* Backdrop */}
       <div className="fixed inset-0 z-40 bg-black/20 backdrop-blur-xs" onClick={onClose} />
 
-      {/* Panel */}
       <div className="fixed right-0 top-0 z-50 flex h-full w-full max-w-xl flex-col border-l border-gray-200 bg-white shadow-2xl">
-        {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
           <h2 className="text-base font-bold text-gray-900 truncate pr-4">Task Details</h2>
           <button
@@ -70,14 +89,10 @@ export function TaskDetailPanel({ task, projectId, members, onClose }: TaskDetai
           </button>
         </div>
 
-        {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto">
-          {/* Task Info Section */}
           <div className="px-6 py-5 space-y-5 border-b border-gray-100">
-            {/* Title */}
             <h3 className="text-lg font-semibold text-gray-900 leading-snug">{task.title}</h3>
 
-            {/* Status & Priority Row */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
@@ -114,7 +129,6 @@ export function TaskDetailPanel({ task, projectId, members, onClose }: TaskDetai
               </div>
             </div>
 
-            {/* Assignee Row */}
             <div>
               <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
                 Assignee
@@ -133,7 +147,43 @@ export function TaskDetailPanel({ task, projectId, members, onClose }: TaskDetai
               </select>
             </div>
 
-            {/* Meta Info */}
+            {/* Labels Section */}
+            <div>
+              <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-2">
+                Labels & Tags
+              </label>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {task.taskLabels?.map(({ label }) => (
+                  <LabelBadge
+                    key={label.id}
+                    name={label.name}
+                    color={label.color}
+                    onRemove={() => handleDetachLabel(label.id)}
+                  />
+                ))}
+
+                {unattachedLabels.length > 0 && (
+                  <select
+                    onChange={(e) => {
+                      handleAttachLabel(e.target.value)
+                      e.target.value = ''
+                    }}
+                    defaultValue=""
+                    className="rounded border border-dashed border-gray-300 bg-gray-50 px-2 py-0.5 text-[10px] font-medium text-gray-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                  >
+                    <option value="" disabled>
+                      + Add label
+                    </option>
+                    {unattachedLabels.map((l) => (
+                      <option key={l.id} value={l.id}>
+                        {l.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+            </div>
+
             <div className="flex items-center gap-2 text-xs">
               <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
                 Priority Indicator:
@@ -144,7 +194,6 @@ export function TaskDetailPanel({ task, projectId, members, onClose }: TaskDetai
               </div>
             </div>
 
-            {/* Description */}
             {task.description && (
               <div>
                 <span className="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
@@ -156,14 +205,12 @@ export function TaskDetailPanel({ task, projectId, members, onClose }: TaskDetai
               </div>
             )}
 
-            {/* Timestamps */}
             <div className="flex gap-6 text-[11px] text-gray-400 pt-2">
               <span>Created {new Date(task.createdAt).toLocaleDateString()}</span>
               <span>Updated {new Date(task.updatedAt).toLocaleDateString()}</span>
             </div>
           </div>
 
-          {/* Comments Section */}
           <div className="px-6 py-5">
             <CommentThread taskId={task.id} currentUserId={user?.id ?? ''} />
           </div>
