@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import { LabelBadge } from '../../labels'
 import type { Task, TaskPriority, TaskStatus } from '../types'
 
@@ -25,10 +27,29 @@ type TaskCardProps = {
 }
 
 export function TaskCard({ task, onStatusChange, onDelete, onClick }: TaskCardProps) {
+  const [isDragging, setIsDragging] = useState(false)
+
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
+    e.dataTransfer.setData('text/plain', task.id)
+    e.dataTransfer.effectAllowed = 'move'
+    setIsDragging(true)
+  }
+
+  const handleDragEnd = () => {
+    setIsDragging(false)
+  }
+
   return (
     <div
+      draggable
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
       onClick={() => onClick(task)}
-      className="group rounded-lg border border-gray-200 bg-white p-3.5 shadow-2xs hover:border-indigo-300 hover:shadow-xs cursor-pointer transition"
+      className={`group rounded-lg border bg-white p-3.5 transition-all select-none cursor-grab active:cursor-grabbing ${
+        isDragging
+          ? 'opacity-40 border-indigo-400 rotate-1 shadow-md scale-[0.98]'
+          : 'border-gray-200 shadow-2xs hover:border-indigo-300 hover:shadow-xs'
+      }`}
     >
       <div className="flex items-start justify-between gap-2">
         <h4 className="font-medium text-sm text-gray-900 leading-snug">{task.title}</h4>
