@@ -1,3 +1,4 @@
+import { LabelBadge } from '../../labels'
 import type { Task, TaskPriority, TaskStatus } from '../types'
 
 const priorityStyles: Record<TaskPriority, string> = {
@@ -45,6 +46,15 @@ export function TaskCard({ task, onStatusChange, onDelete, onClick }: TaskCardPr
 
       {task.description && (
         <p className="mt-1.5 text-xs text-gray-500 line-clamp-2">{task.description}</p>
+      )}
+
+      {/* Attached Labels */}
+      {task.taskLabels && task.taskLabels.length > 0 && (
+        <div className="mt-2.5 flex flex-wrap gap-1.5">
+          {task.taskLabels.map(({ label }) => (
+            <LabelBadge key={label.id} name={label.name} color={label.color} />
+          ))}
+        </div>
       )}
 
       <div className="mt-3 flex items-center justify-between pt-2 border-t border-gray-100 text-xs">

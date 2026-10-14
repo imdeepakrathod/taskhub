@@ -18,6 +18,13 @@ export type Task = {
     name: string
     email: string
   } | null
+  taskLabels?: {
+    label: {
+      id: string
+      name: string
+      color: string
+    }
+  }[]
 }
 
 export type CreateTaskInput = {
