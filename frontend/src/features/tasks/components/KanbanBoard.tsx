@@ -35,6 +35,9 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
   const [selectedAssignee, setSelectedAssignee] = useState<string>('ALL')
   const [selectedLabel, setSelectedLabel] = useState<string>('ALL')
 
+  // Drag and Drop active column state
+  const [dragOverColumn, setDragOverColumn] = useState<TaskStatus | null>(null)
+
   const [modalOpen, setModalOpen] = useState(false)
   const [labelsModalOpen, setLabelsModalOpen] = useState(false)
   const [targetColumn, setTargetColumn] = useState<TaskStatus>('TODO')
@@ -43,7 +46,6 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
   // Client-side filtering
   const filteredTasks = useMemo(() => {
     return tasks.filter((task) => {
-      // 1. Search Query
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase().trim()
         const matchTitle = task.title.toLowerCase().includes(query)
@@ -52,19 +54,16 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
         if (!matchTitle && !matchDesc) return false
       }
 
-      // 2. Priority Filter
       if (selectedPriority !== 'ALL' && task.priority !== selectedPriority) {
         return false
       }
 
-      // 3. Assignee Filter
       if (selectedAssignee === 'UNASSIGNED') {
         if (task.assigneeId !== null) return false
       } else if (selectedAssignee !== 'ALL') {
         if (task.assigneeId !== selectedAssignee) return false
       }
 
-      // 4. Label Filter
       if (selectedLabel !== 'ALL') {
         const hasLabel = task.taskLabels?.some((tl) => tl.label.id === selectedLabel)
         if (!hasLabel) return false
@@ -101,6 +100,35 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
       setSelectedTask(null)
     }
     void deleteTask(taskId)
+  }
+
+  // ── Drag and Drop handlers ─────────────────────────────
+  const handleColumnDragOver = (e: React.DragEvent<HTMLDivElement>, status: TaskStatus) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    if (dragOverColumn !== status) {
+      setDragOverColumn(status)
+    }
+  }
+
+  const handleColumnDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    // Prevent flickering when hovering child elements
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setDragOverColumn(null)
+    }
+  }
+
+  const handleColumnDrop = (e: React.DragEvent<HTMLDivElement>, targetStatus: TaskStatus) => {
+    e.preventDefault()
+    setDragOverColumn(null)
+
+    const taskId = e.dataTransfer.getData('text/plain')
+    if (!taskId) return
+
+    const targetTask = tasks.find((t) => t.id === taskId)
+    if (targetTask && targetTask.status !== targetStatus) {
+      void updateTask({ taskId, input: { status: targetStatus } })
+    }
   }
 
   const activeTask = selectedTask
@@ -140,7 +168,6 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
       {/* Filter Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white p-3.5 shadow-2xs">
         <div className="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
-          {/* Search */}
           <div className="relative min-w-[200px] flex-1 max-w-xs">
             <input
               type="text"
@@ -159,7 +186,6 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
             )}
           </div>
 
-          {/* Priority Filter */}
           <select
             value={selectedPriority}
             onChange={(e) => setSelectedPriority(e.target.value as TaskPriority | 'ALL')}
@@ -172,7 +198,6 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
             <option value="LOW">Low</option>
           </select>
 
-          {/* Assignee Filter */}
           <select
             value={selectedAssignee}
             onChange={(e) => setSelectedAssignee(e.target.value)}
@@ -187,7 +212,6 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
             ))}
           </select>
 
-          {/* Label Filter */}
           <select
             value={selectedLabel}
             onChange={(e) => setSelectedLabel(e.target.value)}
@@ -219,15 +243,23 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
       {isLoading && <p className="text-sm text-gray-500">Loading board tasks...</p>}
       {error && <p className="text-sm text-red-500">Failed to load tasks.</p>}
 
-      {/* 4-Column Board */}
+      {/* 4-Column Board with Drop Zones */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {COLUMNS.map((col) => {
           const colTasks = filteredTasks.filter((t) => t.status === col.id)
+          const isOverThisColumn = dragOverColumn === col.id
 
           return (
             <div
               key={col.id}
-              className="flex flex-col rounded-xl border border-gray-200 bg-gray-50/70 p-3"
+              onDragOver={(e) => handleColumnDragOver(e, col.id)}
+              onDragLeave={handleColumnDragLeave}
+              onDrop={(e) => handleColumnDrop(e, col.id)}
+              className={`flex flex-col rounded-xl border p-3 transition-colors ${
+                isOverThisColumn
+                  ? 'border-indigo-400 bg-indigo-50/50 ring-2 ring-indigo-200/70'
+                  : 'border-gray-200 bg-gray-50/70'
+              }`}
             >
               <div className="flex items-center justify-between px-1 pb-3">
                 <div className="flex items-center gap-2">
@@ -246,7 +278,7 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
                 </button>
               </div>
 
-              <div className="flex-1 space-y-2.5 min-h-[300px]">
+              <div className="flex-1 space-y-2.5 min-h-[320px]">
                 {colTasks.map((task) => (
                   <TaskCard
                     key={task.id}
@@ -257,7 +289,13 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
                   />
                 ))}
 
-                {colTasks.length === 0 && (
+                {isOverThisColumn && (
+                  <div className="rounded-lg border-2 border-dashed border-indigo-300 bg-indigo-50/60 p-3 text-center text-xs font-medium text-indigo-600">
+                    Drop to move to {col.label}
+                  </div>
+                )}
+
+                {colTasks.length === 0 && !isOverThisColumn && (
                   <div className="flex h-32 items-center justify-center rounded-lg border border-dashed border-gray-200 text-xs text-gray-400">
                     {hasActiveFilters ? 'No matching tasks' : 'No tasks'}
                   </div>
