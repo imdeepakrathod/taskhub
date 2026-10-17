@@ -6,6 +6,7 @@ import type { CreateProjectInput, UpdateProjectInput } from './projects.schema.j
 import {
   createProject,
   getProject,
+  getProjectAnalytics,
   listProjects,
   removeProject,
   updateProject,
@@ -83,4 +84,18 @@ export async function deleteProjectController(req: Request, res: Response): Prom
   await removeProject(projectId, req.membership.workspaceId)
 
   res.status(204).send()
+}
+
+export async function getProjectAnalyticsController(req: Request, res: Response): Promise<void> {
+  if (!req.membership) {
+    throw new ForbiddenError('Authentication required', 'UNAUTHENTICATED')
+  }
+
+  const projectId = req.params.projectId as string
+  const analytics = await getProjectAnalytics(projectId, req.membership.workspaceId)
+
+  res.status(200).json({
+    status: 'success',
+    data: { analytics },
+  })
 }
