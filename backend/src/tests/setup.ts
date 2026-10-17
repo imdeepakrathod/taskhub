@@ -17,6 +17,7 @@ const { prisma } = await import('../config/database.js')
 
 beforeEach(async () => {
   await prisma.$transaction([
+    prisma.activityLog.deleteMany(),
     prisma.taskLabel.deleteMany(),
     prisma.comment.deleteMany(),
     prisma.task.deleteMany(),

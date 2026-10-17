@@ -15,6 +15,10 @@ import tasksRouter from './modules/tasks/tasks.routes.js'
 import membersRouter from './modules/members/members.routes.js'
 import commentsRouter from './modules/comments/comments.routes.js'
 import { taskLabelsRouter, workspaceLabelsRouter } from './modules/labels/labels.routes.js'
+import {
+  projectActivityRouter,
+  workspaceActivityRouter,
+} from './modules/activity/activity.routes.js'
 
 const app = express()
 
@@ -61,7 +65,9 @@ app.use('/api/v1/workspaces', workspacesRouter)
 app.use('/api/v1/workspaces/:workspaceId/projects', projectsRouter)
 app.use('/api/v1/workspaces/:workspaceId/members', membersRouter)
 app.use('/api/v1/workspaces/:workspaceId/labels', workspaceLabelsRouter)
+app.use('/api/v1/workspaces/:workspaceId/activity', workspaceActivityRouter)
 app.use('/api/v1/projects/:projectId/tasks', tasksRouter)
+app.use('/api/v1/projects/:projectId/activity', projectActivityRouter)
 app.use('/api/v1/tasks/:taskId/comments', commentsRouter)
 app.use('/api/v1/tasks/:taskId/labels', taskLabelsRouter)
 

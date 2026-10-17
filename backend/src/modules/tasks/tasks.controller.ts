@@ -10,12 +10,12 @@ type UpdateTaskRequest = Request<Record<string, string>, unknown, UpdateTaskInpu
 type ListTasksRequest = Request<Record<string, string>, unknown, unknown, ListTasksQuery>
 
 export async function createTaskController(req: CreateTaskRequest, res: Response): Promise<void> {
-  if (!req.membership) {
+  if (!req.user || !req.membership) {
     throw new ForbiddenError('Authentication required', 'UNAUTHENTICATED')
   }
 
   const projectId = req.params.projectId as string
-  const task = await createTask(projectId, req.membership.workspaceId, req.body)
+  const task = await createTask(projectId, req.membership.workspaceId, req.user.id, req.body)
 
   res.status(201).json({
     status: 'success',
@@ -45,13 +45,19 @@ export async function getTaskController(req: Request, res: Response): Promise<vo
 }
 
 export async function updateTaskController(req: UpdateTaskRequest, res: Response): Promise<void> {
-  if (!req.membership) {
+  if (!req.user || !req.membership) {
     throw new ForbiddenError('Authentication required', 'UNAUTHENTICATED')
   }
 
   const projectId = req.params.projectId as string
   const taskId = req.params.taskId as string
-  const task = await updateTask(taskId, projectId, req.membership.workspaceId, req.body)
+  const task = await updateTask(
+    taskId,
+    projectId,
+    req.membership.workspaceId,
+    req.user.id,
+    req.body,
+  )
 
   res.status(200).json({
     status: 'success',
@@ -60,9 +66,13 @@ export async function updateTaskController(req: UpdateTaskRequest, res: Response
 }
 
 export async function deleteTaskController(req: Request, res: Response): Promise<void> {
+  if (!req.user || !req.membership) {
+    throw new ForbiddenError('Authentication required', 'UNAUTHENTICATED')
+  }
+
   const projectId = req.params.projectId as string
   const taskId = req.params.taskId as string
-  await removeTask(taskId, projectId)
+  await removeTask(taskId, projectId, req.membership.workspaceId, req.user.id)
 
   res.status(204).send()
 }
