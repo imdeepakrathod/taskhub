@@ -5,6 +5,8 @@ export const queryKeys = {
   projects: {
     all: ['projects'] as const,
     byWorkspace: (workspaceId: string) => ['projects', workspaceId] as const,
+    analytics: (workspaceId: string, projectId: string) =>
+      ['projects', workspaceId, projectId, 'analytics'] as const,
   },
   tasks: {
     all: ['tasks'] as const,

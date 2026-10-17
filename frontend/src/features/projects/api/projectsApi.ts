@@ -1,6 +1,6 @@
 import { api } from '../../../lib/axios'
 import type { ApiSuccess } from '../../auth/types'
-import type { CreateProjectInput, Project } from '../types'
+import type { CreateProjectInput, Project, ProjectAnalytics } from '../types'
 
 export async function fetchProjects(workspaceId: string): Promise<Project[]> {
   const response = await api.get<ApiSuccess<{ projects: Project[] }>>(
@@ -20,4 +20,15 @@ export async function createProject(
   )
 
   return response.data.data.project
+}
+
+export async function fetchProjectAnalytics(
+  workspaceId: string,
+  projectId: string,
+): Promise<ProjectAnalytics> {
+  const response = await api.get<ApiSuccess<{ analytics: ProjectAnalytics }>>(
+    `/workspaces/${workspaceId}/projects/${projectId}/analytics`,
+  )
+
+  return response.data.data.analytics
 }

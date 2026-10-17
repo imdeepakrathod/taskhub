@@ -8,6 +8,7 @@ import { validateBody } from '../../middlewares/validate.js'
 import {
   createProjectController,
   deleteProjectController,
+  getProjectAnalyticsController,
   getProjectController,
   listProjectsController,
   updateProjectController,
@@ -36,6 +37,13 @@ projectsRouter.get(
   authenticate,
   authorizeWorkspaceMember(),
   asyncHandler(getProjectController),
+)
+
+projectsRouter.get(
+  '/:projectId/analytics',
+  authenticate,
+  authorizeWorkspaceMember(),
+  asyncHandler(getProjectAnalyticsController),
 )
 
 projectsRouter.patch(
