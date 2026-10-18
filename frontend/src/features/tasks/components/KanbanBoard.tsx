@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 
+import { ActivityTimeline } from '../../activity'
 import { ManageLabelsModal, useLabels } from '../../labels'
 import { useMembers } from '../../members/hooks/useMembers'
 import { ProjectAnalyticsView } from '../../projects'
@@ -30,8 +31,8 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
   const { data: labels = [] } = useLabels(workspaceId)
   const { createTask, updateTask, deleteTask } = useTaskMutations(projectId)
 
-  // View Mode: 'board' or 'analytics'
-  const [activeTab, setActiveTab] = useState<'board' | 'analytics'>('board')
+  // View Mode: 'board', 'analytics', or 'activity'
+  const [activeTab, setActiveTab] = useState<'board' | 'analytics' | 'activity'>('board')
 
   // Filters state
   const [searchQuery, setSearchQuery] = useState('')
@@ -172,6 +173,16 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
             >
               📊 Analytics
             </button>
+            <button
+              onClick={() => setActiveTab('activity')}
+              className={`rounded-md px-3 py-1 font-semibold transition ${
+                activeTab === 'activity'
+                  ? 'bg-white text-gray-900 shadow-2xs'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              🕒 Activity
+            </button>
           </div>
         </div>
 
@@ -193,14 +204,20 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
         )}
       </div>
 
-      {/* Analytics View */}
-      {activeTab === 'analytics' ? (
+      {/* Render Active View Tab */}
+      {activeTab === 'analytics' && (
         <ProjectAnalyticsView
           workspaceId={workspaceId}
           projectId={projectId}
           projectName={projectName}
         />
-      ) : (
+      )}
+
+      {activeTab === 'activity' && (
+        <ActivityTimeline projectId={projectId} projectName={projectName} />
+      )}
+
+      {activeTab === 'board' && (
         /* Kanban Board View */
         <>
           {/* Filter Toolbar */}
