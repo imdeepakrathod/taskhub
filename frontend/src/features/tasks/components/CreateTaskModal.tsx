@@ -33,16 +33,17 @@ export function CreateTaskModal({
       status: defaultStatus,
       priority: 'MEDIUM',
       assigneeId: null,
+      dueDate: '',
     },
   })
 
   if (!isOpen) return null
 
   const onSubmit = async (data: CreateTaskFormData) => {
-    // Convert empty string from select to null
     const payload = {
       ...data,
       assigneeId: data.assigneeId || null,
+      dueDate: data.dueDate ? new Date(data.dueDate).toISOString() : null,
     }
     await onSubmitTask(payload)
     reset()
@@ -119,21 +120,34 @@ export function CreateTaskModal({
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-600">
-              Assignee
-            </label>
-            <select
-              {...register('assigneeId')}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-600 focus:outline-none focus:ring-1 focus:ring-indigo-600"
-            >
-              <option value="">Unassigned</option>
-              {members.map((member) => (
-                <option key={member.user.id} value={member.user.id}>
-                  {member.user.name} ({member.user.email})
-                </option>
-              ))}
-            </select>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-600">
+                Assignee
+              </label>
+              <select
+                {...register('assigneeId')}
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-600 focus:outline-none focus:ring-1 focus:ring-indigo-600"
+              >
+                <option value="">Unassigned</option>
+                {members.map((member) => (
+                  <option key={member.user.id} value={member.user.id}>
+                    {member.user.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-600">
+                Due Date
+              </label>
+              <input
+                type="date"
+                {...register('dueDate')}
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:border-indigo-600 focus:outline-none focus:ring-1 focus:ring-indigo-600"
+              />
+            </div>
           </div>
 
           <div className="flex justify-end gap-2.5 pt-3 border-t border-gray-100">
