@@ -4,6 +4,7 @@ import { LabelBadge, useLabelMutations, useLabels } from '../../labels'
 import type { Member } from '../../members/types'
 import { useTaskMutations } from '../hooks/useTaskMutations'
 import type { Task, TaskPriority, TaskStatus } from '../types'
+import { DueDateBadge } from './DueDateBadge'
 
 const statusLabels: Record<TaskStatus, string> = {
   BACKLOG: 'Backlog',
@@ -65,6 +66,13 @@ export function TaskDetailPanel({
     })
   }
 
+  const handleDueDateChange = (dateStr: string) => {
+    void updateTask({
+      taskId: task.id,
+      input: { dueDate: dateStr ? new Date(dateStr).toISOString() : null },
+    })
+  }
+
   const handleAttachLabel = (labelId: string) => {
     if (!labelId) return
     void attachLabel({ taskId: task.id, labelId })
@@ -73,6 +81,9 @@ export function TaskDetailPanel({
   const handleDetachLabel = (labelId: string) => {
     void detachLabel({ taskId: task.id, labelId })
   }
+
+  // Convert ISO string to YYYY-MM-DD for date input
+  const dateInputValue = task.dueDate ? task.dueDate.split('T')[0] : ''
 
   return (
     <>
@@ -129,23 +140,58 @@ export function TaskDetailPanel({
               </div>
             </div>
 
-            <div>
-              <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
-                Assignee
-              </label>
-              <select
-                value={task.assigneeId ?? ''}
-                onChange={(e) => handleAssigneeChange(e.target.value)}
-                className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
-              >
-                <option value="">Unassigned</option>
-                {members.map((member) => (
-                  <option key={member.user.id} value={member.user.id}>
-                    {member.user.name} ({member.user.email})
-                  </option>
-                ))}
-              </select>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
+                  Assignee
+                </label>
+                <select
+                  value={task.assigneeId ?? ''}
+                  onChange={(e) => handleAssigneeChange(e.target.value)}
+                  className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                >
+                  <option value="">Unassigned</option>
+                  {members.map((member) => (
+                    <option key={member.user.id} value={member.user.id}>
+                      {member.user.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
+                  Due Date
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="date"
+                    value={dateInputValue}
+                    onChange={(e) => handleDueDateChange(e.target.value)}
+                    className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-800 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                  {task.dueDate && (
+                    <button
+                      type="button"
+                      onClick={() => handleDueDateChange('')}
+                      title="Clear due date"
+                      className="text-xs text-gray-400 hover:text-red-500"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
+
+            {task.dueDate && (
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+                  Timeline Status:
+                </span>
+                <DueDateBadge dueDate={task.dueDate} isDone={task.status === 'DONE'} />
+              </div>
+            )}
 
             {/* Labels Section */}
             <div>

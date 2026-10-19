@@ -8,6 +8,7 @@ import { useTaskMutations } from '../hooks/useTaskMutations'
 import { useTasks } from '../hooks/useTasks'
 import type { Task, TaskPriority, TaskStatus } from '../types'
 import { CreateTaskModal } from './CreateTaskModal'
+import { formatDueDate } from '../utils/dateUtils'
 import { TaskCard } from './TaskCard'
 import { TaskDetailPanel } from './TaskDetailPanel'
 
@@ -39,6 +40,7 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
   const [selectedPriority, setSelectedPriority] = useState<TaskPriority | 'ALL'>('ALL')
   const [selectedAssignee, setSelectedAssignee] = useState<string>('ALL')
   const [selectedLabel, setSelectedLabel] = useState<string>('ALL')
+  const [selectedDueDate, setSelectedDueDate] = useState<string>('ALL')
 
   // Drag and Drop active column state
   const [dragOverColumn, setDragOverColumn] = useState<TaskStatus | null>(null)
@@ -74,21 +76,38 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
         if (!hasLabel) return false
       }
 
+      // Due Date filtering
+      if (selectedDueDate === 'OVERDUE') {
+        if (!task.dueDate || task.status === 'DONE') return false
+        const { status } = formatDueDate(task.dueDate)
+        if (status !== 'overdue') return false
+      } else if (selectedDueDate === 'TODAY_TOMORROW') {
+        if (!task.dueDate) return false
+        const { status } = formatDueDate(task.dueDate)
+        if (status !== 'today' && status !== 'tomorrow') return false
+      } else if (selectedDueDate === 'HAS_DUE_DATE') {
+        if (!task.dueDate) return false
+      } else if (selectedDueDate === 'NO_DUE_DATE') {
+        if (task.dueDate) return false
+      }
+
       return true
     })
-  }, [tasks, searchQuery, selectedPriority, selectedAssignee, selectedLabel])
+  }, [tasks, searchQuery, selectedPriority, selectedAssignee, selectedLabel, selectedDueDate])
 
   const hasActiveFilters =
     searchQuery.trim() !== '' ||
     selectedPriority !== 'ALL' ||
     selectedAssignee !== 'ALL' ||
-    selectedLabel !== 'ALL'
+    selectedLabel !== 'ALL' ||
+    selectedDueDate !== 'ALL'
 
   const clearFilters = () => {
     setSearchQuery('')
     setSelectedPriority('ALL')
     setSelectedAssignee('ALL')
     setSelectedLabel('ALL')
+    setSelectedDueDate('ALL')
   }
 
   const openCreateForColumn = (status: TaskStatus) => {
@@ -278,6 +297,19 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
                     {l.name}
                   </option>
                 ))}
+              </select>
+
+              {/* Due Date Filter */}
+              <select
+                value={selectedDueDate}
+                onChange={(e) => setSelectedDueDate(e.target.value)}
+                className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+              >
+                <option value="ALL">All Due Dates</option>
+                <option value="OVERDUE">🔴 Overdue</option>
+                <option value="TODAY_TOMORROW">🟡 Due Today / Tomorrow</option>
+                <option value="HAS_DUE_DATE">📅 Has Due Date</option>
+                <option value="NO_DUE_DATE">No Due Date</option>
               </select>
 
               {hasActiveFilters && (

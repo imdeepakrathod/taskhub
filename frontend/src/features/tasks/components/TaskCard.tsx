@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { LabelBadge } from '../../labels'
 import type { Task, TaskPriority, TaskStatus } from '../types'
+import { DueDateBadge } from './DueDateBadge'
 
 const priorityStyles: Record<TaskPriority, string> = {
   LOW: 'bg-gray-100 text-gray-700 border-gray-200',
@@ -39,6 +40,8 @@ export function TaskCard({ task, onStatusChange, onDelete, onClick }: TaskCardPr
     setIsDragging(false)
   }
 
+  const isDone = task.status === 'DONE'
+
   return (
     <div
       draggable
@@ -75,6 +78,13 @@ export function TaskCard({ task, onStatusChange, onDelete, onClick }: TaskCardPr
           {task.taskLabels.map(({ label }) => (
             <LabelBadge key={label.id} name={label.name} color={label.color} />
           ))}
+        </div>
+      )}
+
+      {/* Due Date Badge */}
+      {task.dueDate && (
+        <div className="mt-2">
+          <DueDateBadge dueDate={task.dueDate} isDone={isDone} />
         </div>
       )}
 
