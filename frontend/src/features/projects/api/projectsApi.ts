@@ -22,6 +22,23 @@ export async function createProject(
   return response.data.data.project
 }
 
+export async function updateProject(
+  workspaceId: string,
+  projectId: string,
+  input: Partial<CreateProjectInput>,
+): Promise<Project> {
+  const response = await api.patch<ApiSuccess<{ project: Project }>>(
+    `/workspaces/${workspaceId}/projects/${projectId}`,
+    input,
+  )
+
+  return response.data.data.project
+}
+
+export async function deleteProject(workspaceId: string, projectId: string): Promise<void> {
+  await api.delete(`/workspaces/${workspaceId}/projects/${projectId}`)
+}
+
 export async function fetchProjectAnalytics(
   workspaceId: string,
   projectId: string,

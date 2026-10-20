@@ -64,3 +64,23 @@ export async function findUserWorkspaces(userId: string) {
     },
   })
 }
+
+export async function updateWorkspaceById(workspaceId: string, name: string) {
+  return prisma.workspace.update({
+    where: { id: workspaceId },
+    data: { name },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  })
+}
+
+export async function deleteWorkspaceById(workspaceId: string) {
+  return prisma.workspace.delete({
+    where: { id: workspaceId },
+  })
+}

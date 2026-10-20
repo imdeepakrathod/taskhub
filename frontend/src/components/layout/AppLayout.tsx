@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { useAuth } from '../../features/auth/hooks/useAuth'
-import { CreateWorkspaceModal } from '../../features/workspaces'
+import { CreateWorkspaceModal, WorkspaceSettingsModal } from '../../features/workspaces'
 import type { Workspace } from '../../features/workspaces/types'
 
 export type AppView = 'projects' | 'team'
@@ -26,6 +26,7 @@ export function AppLayout({
   const { user, logout } = useAuth()
   const [showCreateWs, setShowCreateWs] = useState(false)
   const [showWsMenu, setShowWsMenu] = useState(false)
+  const [showWsSettings, setShowWsSettings] = useState(false)
 
   return (
     <div className="flex min-h-screen bg-gray-50 font-sans text-gray-900">
@@ -85,7 +86,19 @@ export function AppLayout({
                     ))}
                   </div>
 
-                  <div className="mt-1.5 border-t border-gray-100 pt-1.5">
+                  <div className="mt-1.5 border-t border-gray-100 pt-1.5 space-y-0.5">
+                    {activeWorkspace && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowWsMenu(false)
+                          setShowWsSettings(true)
+                        }}
+                        className="flex w-full items-center gap-1.5 rounded-md px-2.5 py-1.5 text-left text-xs font-medium text-gray-700 hover:bg-gray-50"
+                      >
+                        <span>⚙️</span> Workspace settings
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => {
@@ -174,12 +187,26 @@ export function AppLayout({
         <div className="p-8 max-w-6xl mx-auto">{children}</div>
       </main>
 
-      {/* Modal */}
+      {/* Modals */}
       <CreateWorkspaceModal
         isOpen={showCreateWs}
         onClose={() => setShowCreateWs(false)}
         onSuccess={(id) => onSelectWorkspace(id)}
       />
+
+      {activeWorkspace && (
+        <WorkspaceSettingsModal
+          isOpen={showWsSettings}
+          workspace={activeWorkspace}
+          onClose={() => setShowWsSettings(false)}
+          onDeleted={() => {
+            const remaining = workspaces.filter((w) => w.id !== activeWorkspace.id)
+            if (remaining.length > 0) {
+              onSelectWorkspace(remaining[0].id)
+            }
+          }}
+        />
+      )}
     </div>
   )
 }

@@ -3,12 +3,12 @@ import { useMemo, useState } from 'react'
 import { ActivityTimeline } from '../../activity'
 import { ManageLabelsModal, useLabels } from '../../labels'
 import { useMembers } from '../../members/hooks/useMembers'
-import { ProjectAnalyticsView } from '../../projects'
+import { ProjectAnalyticsView, ProjectSettingsModal } from '../../projects'
 import { useTaskMutations } from '../hooks/useTaskMutations'
 import { useTasks } from '../hooks/useTasks'
 import type { Task, TaskPriority, TaskStatus } from '../types'
-import { CreateTaskModal } from './CreateTaskModal'
 import { formatDueDate } from '../utils/dateUtils'
+import { CreateTaskModal } from './CreateTaskModal'
 import { TaskCard } from './TaskCard'
 import { TaskDetailPanel } from './TaskDetailPanel'
 
@@ -41,6 +41,9 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
   const [selectedAssignee, setSelectedAssignee] = useState<string>('ALL')
   const [selectedLabel, setSelectedLabel] = useState<string>('ALL')
   const [selectedDueDate, setSelectedDueDate] = useState<string>('ALL')
+
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false)
+  const [currentProjectName, setCurrentProjectName] = useState(projectName)
 
   // Drag and Drop active column state
   const [dragOverColumn, setDragOverColumn] = useState<TaskStatus | null>(null)
@@ -168,7 +171,7 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
           >
             ← Back to Projects
           </button>
-          <h2 className="text-xl font-bold text-gray-900">{projectName}</h2>
+          <h2 className="text-xl font-bold text-gray-900">{currentProjectName}</h2>
 
           {/* View Mode Switcher Tabs */}
           <div className="ml-3 flex items-center rounded-lg border border-gray-200 bg-gray-100 p-0.5 text-xs">
@@ -205,22 +208,32 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
           </div>
         </div>
 
-        {activeTab === 'board' && (
-          <div className="flex items-center gap-2.5">
-            <button
-              onClick={() => setLabelsModalOpen(true)}
-              className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 shadow-2xs transition"
-            >
-              🏷️ Labels
-            </button>
-            <button
-              onClick={() => openCreateForColumn('TODO')}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 shadow-xs transition"
-            >
-              + Add Task
-            </button>
-          </div>
-        )}
+        {/* Top Right Actions */}
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => setSettingsModalOpen(true)}
+            className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 shadow-2xs transition"
+          >
+            ⚙️ Settings
+          </button>
+
+          {activeTab === 'board' && (
+            <>
+              <button
+                onClick={() => setLabelsModalOpen(true)}
+                className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 shadow-2xs transition"
+              >
+                🏷️ Labels
+              </button>
+              <button
+                onClick={() => openCreateForColumn('TODO')}
+                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 shadow-xs transition"
+              >
+                + Add Task
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Render Active View Tab */}
@@ -228,16 +241,15 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
         <ProjectAnalyticsView
           workspaceId={workspaceId}
           projectId={projectId}
-          projectName={projectName}
+          projectName={currentProjectName}
         />
       )}
 
       {activeTab === 'activity' && (
-        <ActivityTimeline projectId={projectId} projectName={projectName} />
+        <ActivityTimeline projectId={projectId} projectName={currentProjectName} />
       )}
 
       {activeTab === 'board' && (
-        /* Kanban Board View */
         <>
           {/* Filter Toolbar */}
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white p-3.5 shadow-2xs">
@@ -299,7 +311,6 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
                 ))}
               </select>
 
-              {/* Due Date Filter */}
               <select
                 value={selectedDueDate}
                 onChange={(e) => setSelectedDueDate(e.target.value)}
@@ -420,6 +431,16 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
           onClose={() => setSelectedTask(null)}
         />
       )}
+
+      <ProjectSettingsModal
+        isOpen={settingsModalOpen}
+        workspaceId={workspaceId}
+        projectId={projectId}
+        projectName={currentProjectName}
+        onClose={() => setSettingsModalOpen(false)}
+        onRenamed={(newName) => setCurrentProjectName(newName)}
+        onDeleted={onBack}
+      />
     </div>
   )
 }
