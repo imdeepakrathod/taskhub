@@ -4,8 +4,13 @@ import { Prisma } from '../../generated/prisma/client.js'
 
 import { createSlug } from '../../common/utils/slug.js'
 
-import type { CreateWorkspaceInput } from './workspaces.schema.js'
-import { createWorkspaceWithOwner, findUserWorkspaces } from './workspaces.repository.js'
+import type { CreateWorkspaceInput, UpdateWorkspaceInput } from './workspaces.schema.js'
+import {
+  createWorkspaceWithOwner,
+  deleteWorkspaceById,
+  findUserWorkspaces,
+  updateWorkspaceById,
+} from './workspaces.repository.js'
 
 const MAX_SLUG_ATTEMPTS = 5
 
@@ -52,4 +57,12 @@ export async function listUserWorkspaces(userId: string) {
     ...workspace,
     role,
   }))
+}
+
+export async function updateWorkspace(workspaceId: string, input: UpdateWorkspaceInput) {
+  return updateWorkspaceById(workspaceId, input.name)
+}
+
+export async function removeWorkspace(workspaceId: string) {
+  await deleteWorkspaceById(workspaceId)
 }
