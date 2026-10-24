@@ -95,6 +95,10 @@ export function DashboardPage() {
       activeView={activeView}
       onSelectWorkspace={handleSelectWorkspace}
       onNavigate={handleNavigate}
+      onSelectProject={(project) => {
+        setSelectedProject(project)
+        setActiveView('projects')
+      }}
     >
       {renderContent()}
     </AppLayout>

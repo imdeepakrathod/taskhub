@@ -19,6 +19,7 @@ import {
   projectActivityRouter,
   workspaceActivityRouter,
 } from './modules/activity/activity.routes.js'
+import searchRouter from './modules/search/search.routes.js'
 
 const app = express()
 
@@ -70,6 +71,7 @@ app.use('/api/v1/projects/:projectId/tasks', tasksRouter)
 app.use('/api/v1/projects/:projectId/activity', projectActivityRouter)
 app.use('/api/v1/tasks/:taskId/comments', commentsRouter)
 app.use('/api/v1/tasks/:taskId/labels', taskLabelsRouter)
+app.use('/api/v1/workspaces/:workspaceId/search', searchRouter)
 
 app.use((_req, _res, next) => {
   next(new NotFoundError('Route not found', 'ROUTE_NOT_FOUND'))

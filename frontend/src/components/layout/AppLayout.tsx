@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useAuth } from '../../features/auth/hooks/useAuth'
+import type { Project } from '../../features/projects/types'
+import { SearchModal } from '../../features/search'
 import { CreateWorkspaceModal, WorkspaceSettingsModal } from '../../features/workspaces'
 import type { Workspace } from '../../features/workspaces/types'
 
@@ -12,6 +14,7 @@ type AppLayoutProps = {
   activeView: AppView
   onSelectWorkspace: (workspaceId: string) => void
   onNavigate: (view: AppView) => void
+  onSelectProject?: (project: Project) => void
   children: React.ReactNode
 }
 
@@ -21,12 +24,30 @@ export function AppLayout({
   activeView,
   onSelectWorkspace,
   onNavigate,
+  onSelectProject,
   children,
 }: AppLayoutProps) {
   const { user, logout } = useAuth()
   const [showCreateWs, setShowCreateWs] = useState(false)
   const [showWsMenu, setShowWsMenu] = useState(false)
   const [showWsSettings, setShowWsSettings] = useState(false)
+  const [showSearch, setShowSearch] = useState(false)
+
+  // Global Shortcut: Cmd+K / Ctrl+K
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        if (activeWorkspace) {
+          setShowSearch((prev) => !prev)
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [activeWorkspace])
 
   return (
     <div className="flex min-h-screen bg-gray-50 font-sans text-gray-900">
@@ -181,6 +202,23 @@ export function AppLayout({
               </>
             )}
           </div>
+
+          {/* Quick Search Button in Navbar */}
+          {activeWorkspace && (
+            <button
+              type="button"
+              onClick={() => setShowSearch(true)}
+              className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50/70 px-3 py-1.5 text-xs text-gray-400 hover:bg-gray-100/80 transition"
+            >
+              <span className="flex items-center gap-1.5">
+                <span>🔍</span>
+                <span className="font-medium">Quick search...</span>
+              </span>
+              <kbd className="rounded border border-gray-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-gray-500 shadow-2xs">
+                Ctrl K
+              </kbd>
+            </button>
+          )}
         </header>
 
         {/* Page Content */}
@@ -205,6 +243,15 @@ export function AppLayout({
               onSelectWorkspace(remaining[0].id)
             }
           }}
+        />
+      )}
+
+      {activeWorkspace && onSelectProject && (
+        <SearchModal
+          isOpen={showSearch}
+          workspaceId={activeWorkspace.id}
+          onClose={() => setShowSearch(false)}
+          onSelectProject={onSelectProject}
         />
       )}
     </div>

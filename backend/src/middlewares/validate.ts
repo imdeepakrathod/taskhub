@@ -23,3 +23,23 @@ export function validateBody(schema: z.ZodType): RequestHandler {
     next()
   }
 }
+
+export function validateQuery(schema: z.ZodType): RequestHandler {
+  return (req, _res, next) => {
+    const result = schema.safeParse(req.query)
+
+    if (!result.success) {
+      next(
+        new BadRequestError(
+          'Request query validation failed',
+          'VALIDATION_ERROR',
+          z.flattenError(result.error),
+        ),
+      )
+
+      return
+    }
+
+    next()
+  }
+}
