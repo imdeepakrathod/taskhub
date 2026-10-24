@@ -25,4 +25,7 @@ export const queryKeys = {
     byProject: (projectId: string) => ['activity', 'project', projectId] as const,
     byWorkspace: (workspaceId: string) => ['activity', 'workspace', workspaceId] as const,
   },
+  search: {
+    query: (workspaceId: string, q: string) => ['search', workspaceId, q] as const,
+  },
 } as const
