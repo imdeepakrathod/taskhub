@@ -11,6 +11,7 @@ import {
   getNextTaskPosition,
   updateTaskById,
 } from './tasks.repository.js'
+import { emitToProject } from '../../config/socket.js'
 
 export async function createTask(
   projectId: string,
@@ -63,6 +64,9 @@ export async function createTask(
       priority: task.priority,
     },
   })
+
+  // Broadcast real-time event to project room
+  emitToProject(projectId, 'task:created', task)
 
   return task
 }
@@ -170,6 +174,9 @@ export async function updateTask(
     })
   }
 
+  // Broadcast real-time update (e.g. status changed, drag-and-drop, priority)
+  emitToProject(projectId, 'task:updated', updatedTask)
+
   return updatedTask
 }
 
@@ -198,4 +205,7 @@ export async function removeTask(
       taskTitle: task.title,
     },
   })
+
+  // Broadcast deletion
+  emitToProject(projectId, 'task:deleted', { taskId })
 }
