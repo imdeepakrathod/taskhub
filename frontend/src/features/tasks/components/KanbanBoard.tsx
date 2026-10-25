@@ -4,6 +4,7 @@ import { ActivityTimeline } from '../../activity'
 import { ManageLabelsModal, useLabels } from '../../labels'
 import { useMembers } from '../../members/hooks/useMembers'
 import { ProjectAnalyticsView, ProjectSettingsModal } from '../../projects'
+import { useProjectSocket } from '../hooks/useProjectSocket'
 import { useTaskMutations } from '../hooks/useTaskMutations'
 import { useTasks } from '../hooks/useTasks'
 import type { Task, TaskPriority, TaskStatus } from '../types'
@@ -31,6 +32,9 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
   const { data: members = [] } = useMembers(workspaceId)
   const { data: labels = [] } = useLabels(workspaceId)
   const { createTask, updateTask, deleteTask } = useTaskMutations(projectId)
+
+  // Real-Time WebSocket Hook
+  const { isConnected } = useProjectSocket(projectId, workspaceId)
 
   // View Mode: 'board', 'analytics', or 'activity'
   const [activeTab, setActiveTab] = useState<'board' | 'analytics' | 'activity'>('board')
@@ -172,6 +176,25 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
             ← Back to Projects
           </button>
           <h2 className="text-xl font-bold text-gray-900">{currentProjectName}</h2>
+
+          {/* Real-time Connection Status Badge */}
+          {isConnected ? (
+            <span
+              title="Real-time WebSockets connected"
+              className="flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-semibold text-emerald-700"
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Live
+            </span>
+          ) : (
+            <span
+              title="Connecting to real-time server..."
+              className="flex items-center gap-1.5 rounded-full bg-gray-50 border border-gray-200 px-2 py-0.5 text-[10px] font-medium text-gray-400"
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-gray-300" />
+              Connecting
+            </span>
+          )}
 
           {/* View Mode Switcher Tabs */}
           <div className="ml-3 flex items-center rounded-lg border border-gray-200 bg-gray-100 p-0.5 text-xs">

@@ -1,6 +1,9 @@
+import http from 'node:http'
+
 import app from './app.js'
 import { prisma } from './config/database.js'
 import { env } from './config/env.js'
+import { initSocketServer } from './config/socket.js'
 
 async function startServer() {
   try {
@@ -8,8 +11,15 @@ async function startServer() {
 
     console.warn('PostgreSQL connected successfully')
 
-    const server = app.listen(env.PORT, () => {
+    // Create Node HTTP server wrapping Express app
+    const httpServer = http.createServer(app)
+
+    // Attach Socket.IO to HTTP server
+    initSocketServer(httpServer)
+
+    httpServer.listen(env.PORT, () => {
       console.warn(`Server running at http://localhost:${env.PORT}`)
+      console.warn(`WebSocket server initialized on port ${env.PORT}`)
     })
 
     let isShuttingDown = false
@@ -23,7 +33,7 @@ async function startServer() {
 
       console.warn(`${signal} received, shutting down`)
 
-      server.close(async (error) => {
+      httpServer.close(async (error) => {
         try {
           await prisma.$disconnect()
 
