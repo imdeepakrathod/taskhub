@@ -67,7 +67,20 @@ export function useProjectSocket(projectId: string, workspaceId: string) {
         queryKey: queryKeys.activity.byProject(projectId),
       })
     }
+    const onAttachmentCreated = ({ taskId }: { taskId: string }) => {
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.attachments.byTask(taskId),
+      })
+    }
 
+    const onAttachmentDeleted = ({ taskId }: { taskId: string }) => {
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.attachments.byTask(taskId),
+      })
+    }
+
+    socket.on('task:attachment:created', onAttachmentCreated)
+    socket.on('task:attachment:deleted', onAttachmentDeleted)
     socket.on('task:created', onTaskCreated)
     socket.on('task:updated', onTaskUpdated)
     socket.on('task:deleted', onTaskDeleted)
@@ -79,6 +92,8 @@ export function useProjectSocket(projectId: string, workspaceId: string) {
       socket.off('task:created', onTaskCreated)
       socket.off('task:updated', onTaskUpdated)
       socket.off('task:deleted', onTaskDeleted)
+      socket.off('task:attachment:created', onAttachmentCreated)
+      socket.off('task:attachment:deleted', onAttachmentDeleted)
     }
   }, [projectId, workspaceId, queryClient])
 

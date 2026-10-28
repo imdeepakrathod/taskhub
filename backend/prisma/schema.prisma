@@ -23,6 +23,7 @@ model User {
   assignedTasks        Task[]
   comments             Comment[]
   activityLogs         ActivityLog[]
+  attachments          Attachment[]
 
   @@map("users")
 }
@@ -135,6 +136,7 @@ model Task {
   assignee   User?       @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
   comments   Comment[]
   taskLabels TaskLabel[]
+  attachments Attachment[]
 
   @@index([projectId, status])
   @@index([assigneeId])
@@ -221,4 +223,24 @@ model ActivityLog {
   @@index([workspaceId, createdAt(sort: Desc)])
   @@index([projectId, createdAt(sort: Desc)])
   @@map("activity_logs")
+}
+
+// ─── Attachments ─────────────────────────────────────
+
+model Attachment {
+  id         String   @id @default(uuid()) @db.Uuid
+  fileName   String   @map("file_name") @db.VarChar(255)
+  fileUrl    String   @map("file_url") @db.VarChar(1000)
+  fileSize   Int      @map("file_size") // in bytes
+  mimeType   String   @map("mime_type") @db.VarChar(100)
+  taskId     String   @map("task_id") @db.Uuid
+  uploaderId String   @map("uploader_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  task     Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  uploader User @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@index([uploaderId])
+  @@map("attachments")
 }

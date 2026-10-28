@@ -28,4 +28,7 @@ export const queryKeys = {
   search: {
     query: (workspaceId: string, q: string) => ['search', workspaceId, q] as const,
   },
+  attachments: {
+    byTask: (taskId: string) => ['attachments', taskId] as const,
+  },
 } as const
