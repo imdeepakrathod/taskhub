@@ -20,12 +20,18 @@ import {
   workspaceActivityRouter,
 } from './modules/activity/activity.routes.js'
 import searchRouter from './modules/search/search.routes.js'
+import path from 'node:path'
+import attachmentsRouter from './modules/attachments/attachments.routes.js'
 
 const app = express()
 
 app.disable('x-powered-by')
 
-app.use(helmet())
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  }),
+)
 
 app.use(
   cors({
@@ -61,6 +67,8 @@ app.get('/ready', async (_req, res) => {
   }
 })
 
+app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads')))
+
 app.use('/api/v1/auth', authRouter)
 app.use('/api/v1/workspaces', workspacesRouter)
 app.use('/api/v1/workspaces/:workspaceId/projects', projectsRouter)
@@ -72,6 +80,7 @@ app.use('/api/v1/projects/:projectId/activity', projectActivityRouter)
 app.use('/api/v1/tasks/:taskId/comments', commentsRouter)
 app.use('/api/v1/tasks/:taskId/labels', taskLabelsRouter)
 app.use('/api/v1/workspaces/:workspaceId/search', searchRouter)
+app.use('/api/v1/tasks/:taskId/attachments', attachmentsRouter)
 
 app.use((_req, _res, next) => {
   next(new NotFoundError('Route not found', 'ROUTE_NOT_FOUND'))

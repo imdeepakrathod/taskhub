@@ -5,6 +5,7 @@ import type { Member } from '../../members/types'
 import { useTaskMutations } from '../hooks/useTaskMutations'
 import type { Task, TaskPriority, TaskStatus } from '../types'
 import { DueDateBadge } from './DueDateBadge'
+import { AttachmentList } from '../../attachments'
 
 const statusLabels: Record<TaskStatus, string> = {
   BACKLOG: 'Backlog',
@@ -256,7 +257,9 @@ export function TaskDetailPanel({
               <span>Updated {new Date(task.updatedAt).toLocaleDateString()}</span>
             </div>
           </div>
-
+          <div className="px-6 py-5 border-b border-gray-100">
+            <AttachmentList taskId={task.id} currentUserId={user?.id ?? ''} />
+          </div>
           <div className="px-6 py-5">
             <CommentThread taskId={task.id} currentUserId={user?.id ?? ''} />
           </div>
