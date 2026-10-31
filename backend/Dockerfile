@@ -6,15 +6,12 @@ WORKDIR /app
 # Install system dependencies needed for Prisma
 RUN apk add --no-cache openssl
 
-# Copy package manifests
+# Copy package manifests and Prisma schema (needed for postinstall script)
 COPY package*.json ./
-
-# Install all dependencies (including devDependencies for TypeScript & Prisma)
-RUN npm ci
-
-# Copy Prisma schema and generate client
 COPY prisma ./prisma
-RUN npx prisma generate
+
+# Install all dependencies (automatically triggers npm postinstall: prisma generate)
+RUN npm ci
 
 # Copy source code and build config
 COPY tsconfig*.json ./
