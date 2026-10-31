@@ -1,0 +1,56 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: taskhub-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: taskhub_secret_password
+      POSTGRES_DB: taskhub_prod
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d taskhub_prod']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: taskhub-backend
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: 4000
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:taskhub_secret_password@postgres:5432/taskhub_prod?schema=public
+      JWT_ACCESS_SECRET: e4b2f195d82a17f63901b2a95c478e12d345f678901234567890abcdef123456
+      JWT_REFRESH_SECRET: 7890abcdef123456e4b2f195d82a17f63901b2a95c478e12d345f67890123456
+      JWT_ACCESS_EXPIRES_IN: 15m
+      JWT_REFRESH_EXPIRES_IN: 7d
+      CLIENT_URL: http://localhost:80
+    ports:
+      - '4000:4000'
+    volumes:
+      - backend_uploads:/app/uploads
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: taskhub-frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - '80:80'
+
+volumes:
+  postgres_data:
+  backend_uploads:
