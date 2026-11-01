@@ -7,8 +7,10 @@ let socket: Socket | null = null
 export function getSocket(): Socket {
   const token = authSession.getAccessToken()
 
+  const socketUrl = import.meta.env.VITE_SOCKET_URL || undefined
+
   if (!socket) {
-    socket = io({
+    socket = io(socketUrl, {
       autoConnect: false,
       auth: {
         token,
