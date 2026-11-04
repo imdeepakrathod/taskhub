@@ -31,4 +31,7 @@ export const queryKeys = {
   attachments: {
     byTask: (taskId: string) => ['attachments', taskId] as const,
   },
+  notifications: {
+    byWorkspace: (workspaceId: string) => ['notifications', workspaceId] as const,
+  },
 } as const

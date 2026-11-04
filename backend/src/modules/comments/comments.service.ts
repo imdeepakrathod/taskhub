@@ -9,14 +9,20 @@ import {
   findCommentById,
   findCommentsByTaskId,
 } from './comments.repository.js'
+import { sendNotification } from '../notifications/notifications.service.js'
 
 export async function createComment(taskId: string, authorId: string, input: CreateCommentInput) {
   const comment = await createCommentInDb(taskId, authorId, input.content)
 
-  // Fetch task context for audit logging
+  // Fetch task context for audit logging & notifications
   const task = await prisma.task.findUnique({
     where: { id: taskId },
-    select: { title: true, projectId: true, project: { select: { workspaceId: true } } },
+    select: {
+      title: true,
+      projectId: true,
+      assigneeId: true, // 👈 Added assigneeId
+      project: { select: { workspaceId: true } },
+    },
   })
 
   if (task) {
@@ -32,6 +38,19 @@ export async function createComment(taskId: string, authorId: string, input: Cre
         preview: input.content.length > 60 ? `${input.content.slice(0, 60)}...` : input.content,
       },
     })
+
+    // Notify task assignee if someone else comments on their task
+    if (task.assigneeId && task.assigneeId !== authorId) {
+      void sendNotification({
+        userId: task.assigneeId,
+        actorId: authorId,
+        workspaceId: task.project.workspaceId,
+        type: 'COMMENT_ADDED',
+        title: 'New Comment',
+        message: `${comment.author.name} commented on your assigned task: "${task.title}"`,
+        entityId: taskId,
+      })
+    }
   }
 
   return comment

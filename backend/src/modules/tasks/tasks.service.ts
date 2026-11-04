@@ -12,6 +12,7 @@ import {
   updateTaskById,
 } from './tasks.repository.js'
 import { emitToProject } from '../../config/socket.js'
+import { sendNotification } from '../notifications/notifications.service.js'
 
 export async function createTask(
   projectId: string,
@@ -173,7 +174,17 @@ export async function updateTask(
       },
     })
   }
-
+  if (input.assigneeId && input.assigneeId !== task.assigneeId) {
+    void sendNotification({
+      userId: input.assigneeId,
+      actorId: userId,
+      workspaceId,
+      type: 'TASK_ASSIGNED',
+      title: 'Task Assigned',
+      message: `You were assigned to task: "${updatedTask.title}"`,
+      entityId: updatedTask.id,
+    })
+  }
   // Broadcast real-time update (e.g. status changed, drag-and-drop, priority)
   emitToProject(projectId, 'task:updated', updatedTask)
 

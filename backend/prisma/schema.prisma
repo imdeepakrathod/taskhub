@@ -17,13 +17,15 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  refreshTokens        RefreshToken[]
-  workspaceMemberships WorkspaceMember[]
-  createdProjects      Project[]
-  assignedTasks        Task[]
-  comments             Comment[]
-  activityLogs         ActivityLog[]
-  attachments          Attachment[]
+  refreshTokens          RefreshToken[]
+  workspaceMemberships   WorkspaceMember[]
+  createdProjects        Project[]
+  assignedTasks          Task[]
+  comments               Comment[]
+  activityLogs           ActivityLog[]
+  attachments            Attachment[]
+  receivedNotifications  Notification[]    @relation("ReceivedNotifications")
+  triggeredNotifications Notification[]    @relation("TriggeredNotifications")
 
   @@map("users")
 }
@@ -58,10 +60,11 @@ model Workspace {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  members      WorkspaceMember[]
-  projects     Project[]
-  labels       Label[]
-  activityLogs ActivityLog[]
+  members       WorkspaceMember[]
+  projects      Project[]
+  labels        Label[]
+  activityLogs  ActivityLog[]
+  notifications Notification[]
 
   @@map("workspaces")
 }
@@ -132,10 +135,10 @@ model Task {
   createdAt   DateTime     @default(now()) @map("created_at")
   updatedAt   DateTime     @updatedAt @map("updated_at")
 
-  project    Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  assignee   User?       @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
-  comments   Comment[]
-  taskLabels TaskLabel[]
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignee    User?        @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
+  comments    Comment[]
+  taskLabels  TaskLabel[]
   attachments Attachment[]
 
   @@index([projectId, status])
@@ -243,4 +246,32 @@ model Attachment {
   @@index([taskId])
   @@index([uploaderId])
   @@map("attachments")
+}
+
+// ─── Notifications ───────────────────────────────────
+
+enum NotificationType {
+  TASK_ASSIGNED
+  COMMENT_ADDED
+}
+
+model Notification {
+  id          String           @id @default(uuid()) @db.Uuid
+  userId      String           @map("user_id") @db.Uuid
+  actorId     String           @map("actor_id") @db.Uuid
+  workspaceId String           @map("workspace_id") @db.Uuid
+  type        NotificationType
+  title       String           @db.VarChar(255)
+  message     String           @db.VarChar(1000)
+  entityId    String           @map("entity_id") @db.Uuid // taskId
+  read        Boolean          @default(false)
+  createdAt   DateTime         @default(now()) @map("created_at")
+
+  user      User      @relation("ReceivedNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  actor     User      @relation("TriggeredNotifications", fields: [actorId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("notifications")
 }

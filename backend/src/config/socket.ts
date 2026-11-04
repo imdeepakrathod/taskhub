@@ -53,6 +53,13 @@ export function initSocketServer(httpServer: HttpServer): Server {
 
   // ── Connection & Room Management ──────────────────────
   io.on('connection', (socket: AuthenticatedSocket) => {
+    const userId = socket.data.user?.id
+
+    // Automatically join user's private notification room
+    if (userId) {
+      void socket.join(`user:${userId}`)
+    }
+
     // When a user opens a project board, they join that project's room
     socket.on('project:join', (projectId: string) => {
       if (typeof projectId === 'string') {
@@ -67,7 +74,6 @@ export function initSocketServer(httpServer: HttpServer): Server {
       }
     })
   })
-
   return io
 }
 
@@ -79,5 +85,12 @@ export function getSocketServer(): Server | null {
 export function emitToProject<T>(projectId: string, event: string, data: T): void {
   if (io) {
     io.to(`project:${projectId}`).emit(event, data)
+  }
+}
+
+// ── Helper to emit to a specific user's private room ──
+export function emitToUser<T>(userId: string, event: string, data: T): void {
+  if (io) {
+    io.to(`user:${userId}`).emit(event, data)
   }
 }

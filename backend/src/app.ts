@@ -22,6 +22,7 @@ import {
 import searchRouter from './modules/search/search.routes.js'
 import path from 'node:path'
 import attachmentsRouter from './modules/attachments/attachments.routes.js'
+import notificationsRouter from './modules/notifications/notifications.routes.js'
 
 const app = express()
 
@@ -81,6 +82,7 @@ app.use('/api/v1/tasks/:taskId/comments', commentsRouter)
 app.use('/api/v1/tasks/:taskId/labels', taskLabelsRouter)
 app.use('/api/v1/workspaces/:workspaceId/search', searchRouter)
 app.use('/api/v1/tasks/:taskId/attachments', attachmentsRouter)
+app.use('/api/v1/workspaces/:workspaceId/notifications', notificationsRouter)
 
 app.use((_req, _res, next) => {
   next(new NotFoundError('Route not found', 'ROUTE_NOT_FOUND'))
