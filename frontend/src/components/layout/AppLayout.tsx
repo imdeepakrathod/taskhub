@@ -5,6 +5,7 @@ import type { Project } from '../../features/projects/types'
 import { SearchModal } from '../../features/search'
 import { CreateWorkspaceModal, WorkspaceSettingsModal } from '../../features/workspaces'
 import type { Workspace } from '../../features/workspaces/types'
+import { NotificationBell } from '../../features/notifications'
 
 export type AppView = 'projects' | 'team'
 
@@ -203,21 +204,25 @@ export function AppLayout({
             )}
           </div>
 
-          {/* Quick Search Button in Navbar */}
+          {/* Quick Search Button & Notification Bell */}
           {activeWorkspace && (
-            <button
-              type="button"
-              onClick={() => setShowSearch(true)}
-              className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50/70 px-3 py-1.5 text-xs text-gray-400 hover:bg-gray-100/80 transition"
-            >
-              <span className="flex items-center gap-1.5">
-                <span>🔍</span>
-                <span className="font-medium">Quick search...</span>
-              </span>
-              <kbd className="rounded border border-gray-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-gray-500 shadow-2xs">
-                Ctrl K
-              </kbd>
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setShowSearch(true)}
+                className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50/70 px-3 py-1.5 text-xs text-gray-400 hover:bg-gray-100/80 transition"
+              >
+                <span className="flex items-center gap-1.5">
+                  <span>🔍</span>
+                  <span className="font-medium">Quick search...</span>
+                </span>
+                <kbd className="rounded border border-gray-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-gray-500 shadow-2xs">
+                  Ctrl K
+                </kbd>
+              </button>
+
+              <NotificationBell workspaceId={activeWorkspace.id} />
+            </div>
           )}
         </header>
 
