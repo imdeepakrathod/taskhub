@@ -66,6 +66,12 @@
 - **Instant Entity Search:** Multi-entity query matching tasks and projects across the workspace with 300ms debouncing.
 - **Global Shortcut Listener:** Accessible from anywhere in the app via `Ctrl+K` / `Cmd+K` or `ESC`.
 
+### 💬 Rich Markdown & Workspace Mentions (@name)
+
+- **Real-Time Member Auto-Complete:** Typing `@` displays an interactive member picker with keyboard navigation (`ArrowUp`/`ArrowDown`/`Enter`/`Esc`).
+- **Safe Markdown Rendering:** Supports bold, italics, inline code snippets, and ordered/unordered lists.
+- **Instant Mention Notifications:** Automatically pushes targeted real-time notifications to mentioned team members.
+
 ---
 
 ## 🏗️ System Architecture

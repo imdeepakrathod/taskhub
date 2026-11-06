@@ -260,8 +260,9 @@ export function TaskDetailPanel({
           <div className="px-6 py-5 border-b border-gray-100">
             <AttachmentList taskId={task.id} currentUserId={user?.id ?? ''} />
           </div>
+          {/* Comments Section */}
           <div className="px-6 py-5">
-            <CommentThread taskId={task.id} currentUserId={user?.id ?? ''} />
+            <CommentThread taskId={task.id} currentUserId={user?.id ?? ''} members={members} />
           </div>
         </div>
       </div>

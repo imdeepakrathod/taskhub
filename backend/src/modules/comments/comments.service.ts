@@ -20,14 +20,16 @@ export async function createComment(taskId: string, authorId: string, input: Cre
     select: {
       title: true,
       projectId: true,
-      assigneeId: true, // 👈 Added assigneeId
+      assigneeId: true,
       project: { select: { workspaceId: true } },
     },
   })
 
   if (task) {
+    const workspaceId = task.project.workspaceId
+
     await logActivity({
-      workspaceId: task.project.workspaceId,
+      workspaceId,
       projectId: task.projectId,
       actorId: authorId,
       action: 'COMMENT_CREATED',
@@ -39,17 +41,44 @@ export async function createComment(taskId: string, authorId: string, input: Cre
       },
     })
 
-    // Notify task assignee if someone else comments on their task
+    // 1. Notify task assignee if someone else comments on their task
     if (task.assigneeId && task.assigneeId !== authorId) {
       void sendNotification({
         userId: task.assigneeId,
         actorId: authorId,
-        workspaceId: task.project.workspaceId,
+        workspaceId,
         type: 'COMMENT_ADDED',
         title: 'New Comment',
         message: `${comment.author.name} commented on your assigned task: "${task.title}"`,
         entityId: taskId,
       })
+    }
+
+    // 2. Mention Notifications: Find all workspace members whose names are mentioned with @
+    const workspaceMembers = await prisma.workspaceMember.findMany({
+      where: { workspaceId },
+      include: { user: { select: { id: true, name: true } } },
+    })
+
+    for (const member of workspaceMembers) {
+      // Don't notify the author or someone who already received the assignee notification
+      if (member.userId === authorId || member.userId === task.assigneeId) {
+        continue
+      }
+
+      // Check if comment text contains "@MemberName" (case-insensitive)
+      const mentionPattern = new RegExp(`@${member.user.name}\\b`, 'i')
+      if (mentionPattern.test(input.content)) {
+        void sendNotification({
+          userId: member.userId,
+          actorId: authorId,
+          workspaceId,
+          type: 'COMMENT_ADDED',
+          title: 'Mentioned in Comment',
+          message: `${comment.author.name} mentioned you in a comment on task: "${task.title}"`,
+          entityId: taskId,
+        })
+      }
     }
   }
 
