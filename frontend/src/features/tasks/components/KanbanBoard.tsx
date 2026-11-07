@@ -12,6 +12,8 @@ import { formatDueDate } from '../utils/dateUtils'
 import { CreateTaskModal } from './CreateTaskModal'
 import { TaskCard } from './TaskCard'
 import { TaskDetailPanel } from './TaskDetailPanel'
+import { TaskListView } from './TaskListView'
+import { TaskCalendarView } from './TaskCalendarView'
 
 const COLUMNS: { id: TaskStatus; label: string; dotColor: string }[] = [
   { id: 'TODO', label: 'To Do', dotColor: 'bg-gray-400' },
@@ -39,6 +41,8 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
   // View Mode: 'board', 'analytics', or 'activity'
   const [activeTab, setActiveTab] = useState<'board' | 'analytics' | 'activity'>('board')
 
+  type ActiveView = 'board' | 'list' | 'calendar'
+
   // Filters state
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedPriority, setSelectedPriority] = useState<TaskPriority | 'ALL'>('ALL')
@@ -56,6 +60,7 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
   const [labelsModalOpen, setLabelsModalOpen] = useState(false)
   const [targetColumn, setTargetColumn] = useState<TaskStatus>('TODO')
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
+  const [activeView, setActiveView] = useState<ActiveView>('board')
 
   // Client-side filtering
   const filteredTasks = useMemo(() => {
@@ -196,38 +201,79 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
             </span>
           )}
 
-          {/* View Mode Switcher Tabs */}
-          <div className="ml-3 flex items-center rounded-lg border border-gray-200 bg-gray-100 p-0.5 text-xs">
-            <button
-              onClick={() => setActiveTab('board')}
-              className={`rounded-md px-3 py-1 font-semibold transition ${
-                activeTab === 'board'
-                  ? 'bg-white text-gray-900 shadow-2xs'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              📋 Board
-            </button>
-            <button
-              onClick={() => setActiveTab('analytics')}
-              className={`rounded-md px-3 py-1 font-semibold transition ${
-                activeTab === 'analytics'
-                  ? 'bg-white text-gray-900 shadow-2xs'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              📊 Analytics
-            </button>
-            <button
-              onClick={() => setActiveTab('activity')}
-              className={`rounded-md px-3 py-1 font-semibold transition ${
-                activeTab === 'activity'
-                  ? 'bg-white text-gray-900 shadow-2xs'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              🕒 Activity
-            </button>
+          {/* View Mode & Analytics Navigation */}
+          <div className="flex items-center gap-2">
+            {/* View Switcher: Board | List | Calendar */}
+            <div className="flex items-center rounded-lg border border-gray-200 bg-white p-0.5 shadow-2xs">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('board')
+                  setActiveView('board')
+                }}
+                className={`rounded-md px-2.5 py-1 text-xs font-semibold cursor-pointer transition ${
+                  activeTab === 'board' && activeView === 'board'
+                    ? 'bg-indigo-600 text-white shadow-xs'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                ▦ Board
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('board')
+                  setActiveView('list')
+                }}
+                className={`rounded-md px-2.5 py-1 text-xs font-semibold cursor-pointer transition ${
+                  activeTab === 'board' && activeView === 'list'
+                    ? 'bg-indigo-600 text-white shadow-xs'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                ☰ List
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('board')
+                  setActiveView('calendar')
+                }}
+                className={`rounded-md px-2.5 py-1 text-xs font-semibold cursor-pointer transition ${
+                  activeTab === 'board' && activeView === 'calendar'
+                    ? 'bg-indigo-600 text-white shadow-xs'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                📅 Calendar
+              </button>
+            </div>
+
+            {/* Sub-tabs: Analytics & Activity */}
+            <div className="flex items-center rounded-lg border border-gray-200 bg-white p-0.5 shadow-2xs">
+              <button
+                type="button"
+                onClick={() => setActiveTab('analytics')}
+                className={`rounded-md px-2.5 py-1 text-xs font-semibold cursor-pointer transition ${
+                  activeTab === 'analytics'
+                    ? 'bg-indigo-600 text-white shadow-xs'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                📊 Analytics
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('activity')}
+                className={`rounded-md px-2.5 py-1 text-xs font-semibold cursor-pointer transition ${
+                  activeTab === 'activity'
+                    ? 'bg-indigo-600 text-white shadow-xs'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                🕒 Activity
+              </button>
+            </div>
           </div>
         </div>
 
@@ -235,27 +281,22 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
         <div className="flex items-center gap-2.5">
           <button
             onClick={() => setSettingsModalOpen(true)}
-            className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 shadow-2xs transition"
+            className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 shadow-2xs transition cursor-pointer"
           >
             ⚙️ Settings
           </button>
-
-          {activeTab === 'board' && (
-            <>
-              <button
-                onClick={() => setLabelsModalOpen(true)}
-                className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 shadow-2xs transition"
-              >
-                🏷️ Labels
-              </button>
-              <button
-                onClick={() => openCreateForColumn('TODO')}
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 shadow-xs transition"
-              >
-                + Add Task
-              </button>
-            </>
-          )}
+          <button
+            onClick={() => setLabelsModalOpen(true)}
+            className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 shadow-2xs transition cursor-pointer"
+          >
+            🏷️ Labels
+          </button>
+          <button
+            onClick={() => openCreateForColumn('TODO')}
+            className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-700 shadow-xs transition cursor-pointer"
+          >
+            + Add Task
+          </button>
         </div>
       </div>
 
@@ -364,68 +405,85 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
           {isLoading && <p className="text-sm text-gray-500">Loading board tasks...</p>}
           {error && <p className="text-sm text-red-500">Failed to load tasks.</p>}
 
-          {/* 4-Column Board */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {COLUMNS.map((col) => {
-              const colTasks = filteredTasks.filter((t) => t.status === col.id)
-              const isOverThisColumn = dragOverColumn === col.id
+          {/* View Container: Board vs List vs Calendar */}
+          {activeView === 'board' && (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {COLUMNS.map((col) => {
+                const colTasks = filteredTasks.filter((t) => t.status === col.id)
+                const isOverThisColumn = dragOverColumn === col.id
 
-              return (
-                <div
-                  key={col.id}
-                  onDragOver={(e) => handleColumnDragOver(e, col.id)}
-                  onDragLeave={handleColumnDragLeave}
-                  onDrop={(e) => handleColumnDrop(e, col.id)}
-                  className={`flex flex-col rounded-xl border p-3 transition-colors ${
-                    isOverThisColumn
-                      ? 'border-indigo-400 bg-indigo-50/50 ring-2 ring-indigo-200/70'
-                      : 'border-gray-200 bg-gray-50/70'
-                  }`}
-                >
-                  <div className="flex items-center justify-between px-1 pb-3">
-                    <div className="flex items-center gap-2">
-                      <span className={`h-2.5 w-2.5 rounded-full ${col.dotColor}`} />
-                      <span className="font-semibold text-sm text-gray-800">{col.label}</span>
-                      <span className="rounded-full bg-gray-200/80 px-2 py-0.5 text-xs font-semibold text-gray-600">
-                        {colTasks.length}
-                      </span>
+                return (
+                  <div
+                    key={col.id}
+                    onDragOver={(e) => handleColumnDragOver(e, col.id)}
+                    onDragLeave={handleColumnDragLeave}
+                    onDrop={(e) => handleColumnDrop(e, col.id)}
+                    className={`flex flex-col rounded-xl border p-3 transition-colors ${
+                      isOverThisColumn
+                        ? 'border-indigo-400 bg-indigo-50/50 ring-2 ring-indigo-200/70'
+                        : 'border-gray-200 bg-gray-50/70'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between px-1 pb-3">
+                      <div className="flex items-center gap-2">
+                        <span className={`h-2.5 w-2.5 rounded-full ${col.dotColor}`} />
+                        <span className="font-semibold text-sm text-gray-800">{col.label}</span>
+                        <span className="rounded-full bg-gray-200/80 px-2 py-0.5 text-xs font-semibold text-gray-600">
+                          {colTasks.length}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => openCreateForColumn(col.id)}
+                        title="Add task to column"
+                        className="rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-700 text-sm transition"
+                      >
+                        +
+                      </button>
                     </div>
-                    <button
-                      onClick={() => openCreateForColumn(col.id)}
-                      title="Add task to column"
-                      className="rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-700 text-sm transition"
-                    >
-                      +
-                    </button>
+
+                    <div className="flex-1 space-y-2.5 min-h-[320px]">
+                      {colTasks.map((task) => (
+                        <TaskCard
+                          key={task.id}
+                          task={task}
+                          onStatusChange={handleStatusChange}
+                          onDelete={handleDelete}
+                          onClick={setSelectedTask}
+                        />
+                      ))}
+
+                      {isOverThisColumn && (
+                        <div className="rounded-lg border-2 border-dashed border-indigo-300 bg-indigo-50/60 p-3 text-center text-xs font-medium text-indigo-600">
+                          Drop to move to {col.label}
+                        </div>
+                      )}
+
+                      {colTasks.length === 0 && !isOverThisColumn && (
+                        <div className="flex h-32 items-center justify-center rounded-lg border border-dashed border-gray-200 text-xs text-gray-400">
+                          {hasActiveFilters ? 'No matching tasks' : 'No tasks'}
+                        </div>
+                      )}
+                    </div>
                   </div>
+                )
+              })}
+            </div>
+          )}
 
-                  <div className="flex-1 space-y-2.5 min-h-[320px]">
-                    {colTasks.map((task) => (
-                      <TaskCard
-                        key={task.id}
-                        task={task}
-                        onStatusChange={handleStatusChange}
-                        onDelete={handleDelete}
-                        onClick={setSelectedTask}
-                      />
-                    ))}
+          {activeView === 'list' && (
+            <TaskListView
+              tasks={filteredTasks}
+              members={members}
+              onSelectTask={setSelectedTask}
+              onUpdateTask={(taskId, input) => {
+                void updateTask({ taskId, input })
+              }}
+            />
+          )}
 
-                    {isOverThisColumn && (
-                      <div className="rounded-lg border-2 border-dashed border-indigo-300 bg-indigo-50/60 p-3 text-center text-xs font-medium text-indigo-600">
-                        Drop to move to {col.label}
-                      </div>
-                    )}
-
-                    {colTasks.length === 0 && !isOverThisColumn && (
-                      <div className="flex h-32 items-center justify-center rounded-lg border border-dashed border-gray-200 text-xs text-gray-400">
-                        {hasActiveFilters ? 'No matching tasks' : 'No tasks'}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+          {activeView === 'calendar' && (
+            <TaskCalendarView tasks={filteredTasks} onSelectTask={setSelectedTask} />
+          )}
         </>
       )}
 

@@ -72,6 +72,13 @@
 - **Safe Markdown Rendering:** Supports bold, italics, inline code snippets, and ordered/unordered lists.
 - **Instant Mention Notifications:** Automatically pushes targeted real-time notifications to mentioned team members.
 
+### 📊 Multi-View Switcher (Kanban Board, List, & Calendar Views)
+
+- **▦ Kanban Board:** Visual drag-and-drop workflow with column limits and live position tracking.
+- **☰ Tabular List View:** High-density triage table with inline status/priority editing and assignee selectors.
+- **📅 Calendar Grid View:** Monthly date matrix mapping task deadlines to date cells with month navigation (`◀`, `▶`, `Today`).
+- **Unified Filter State:** Search, priorities, assignees, and due dates remain synchronized across all views with zero redundant network requests.
+
 ---
 
 ## 🏗️ System Architecture
