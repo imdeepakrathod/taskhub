@@ -6,6 +6,7 @@ import { SearchModal } from '../../features/search'
 import { CreateWorkspaceModal, WorkspaceSettingsModal } from '../../features/workspaces'
 import type { Workspace } from '../../features/workspaces/types'
 import { NotificationBell } from '../../features/notifications'
+import { ThemeToggle } from '../common/ThemeToggle'
 
 export type AppView = 'projects' | 'team'
 
@@ -51,16 +52,18 @@ export function AppLayout({
   }, [activeWorkspace])
 
   return (
-    <div className="flex min-h-screen bg-gray-50 font-sans text-gray-900">
+    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-950 font-sans text-gray-900 dark:text-gray-100 transition-colors duration-200">
       {/* ── Left Sidebar ─────────────────────────────────────── */}
-      <aside className="w-64 border-r border-gray-200 bg-white flex flex-col justify-between shrink-0">
+      <aside className="w-64 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex flex-col justify-between shrink-0 transition-colors">
         <div>
           {/* Logo / Brand */}
-          <div className="flex items-center gap-2.5 px-5 py-4 border-b border-gray-100">
+          <div className="flex items-center gap-2.5 px-5 py-4 border-b border-gray-100 dark:border-gray-800">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white font-bold text-sm shadow-xs">
               T
             </div>
-            <span className="font-bold tracking-tight text-gray-900 text-base">TaskHub</span>
+            <span className="font-bold tracking-tight text-gray-900 dark:text-gray-100 text-base">
+              TaskHub
+            </span>
           </div>
 
           {/* Workspace Switcher */}
@@ -69,22 +72,22 @@ export function AppLayout({
               <button
                 type="button"
                 onClick={() => setShowWsMenu(!showWsMenu)}
-                className="flex w-full items-center justify-between rounded-lg border border-gray-200 bg-gray-50/70 p-2.5 text-left hover:bg-gray-100/80 transition"
+                className="flex w-full items-center justify-between rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50/70 dark:bg-gray-800/60 p-2.5 text-left hover:bg-gray-100/80 dark:hover:bg-gray-800 transition cursor-pointer"
               >
                 <div className="min-w-0 pr-2">
-                  <div className="text-xs text-gray-400 font-medium uppercase tracking-wider">
+                  <div className="text-xs text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wider">
                     Workspace
                   </div>
-                  <div className="truncate font-semibold text-sm text-gray-800">
+                  <div className="truncate font-semibold text-sm text-gray-800 dark:text-gray-200">
                     {activeWorkspace ? activeWorkspace.name : 'Select workspace'}
                   </div>
                 </div>
-                <span className="text-gray-400 text-xs">▼</span>
+                <span className="text-gray-400 dark:text-gray-500 text-xs">▼</span>
               </button>
 
               {/* Workspace Dropdown */}
               {showWsMenu && (
-                <div className="absolute left-0 right-0 top-full mt-1.5 z-40 rounded-lg border border-gray-200 bg-white p-1.5 shadow-lg">
+                <div className="absolute left-0 right-0 top-full mt-1.5 z-40 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-1.5 shadow-lg">
                   <div className="max-h-56 overflow-y-auto space-y-0.5">
                     {workspaces.map((ws) => (
                       <button
@@ -94,21 +97,33 @@ export function AppLayout({
                           onSelectWorkspace(ws.id)
                           setShowWsMenu(false)
                         }}
-                        className={`flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-left text-xs ${
+                        className={`flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-left text-xs transition cursor-pointer ${
                           activeWorkspace?.id === ws.id
-                            ? 'bg-indigo-50 font-semibold text-indigo-700'
-                            : 'text-gray-700 hover:bg-gray-50'
+                            ? 'bg-indigo-50 dark:bg-indigo-950/60 font-semibold text-indigo-700 dark:text-indigo-400'
+                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                         }`}
                       >
                         <span className="truncate">{ws.name}</span>
-                        <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-500 uppercase">
-                          {ws.role}
-                        </span>
+                        {activeWorkspace?.id === ws.id && (
+                          <span className="text-indigo-600 dark:text-indigo-400">✓</span>
+                        )}
                       </button>
                     ))}
                   </div>
 
-                  <div className="mt-1.5 border-t border-gray-100 pt-1.5 space-y-0.5">
+                  <div className="border-t border-gray-100 dark:border-gray-800 pt-1.5 mt-1.5 space-y-0.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowWsMenu(false)
+                        setShowCreateWs(true)
+                      }}
+                      className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer"
+                    >
+                      <span>+</span>
+                      <span>New workspace</span>
+                    </button>
+
                     {activeWorkspace && (
                       <button
                         type="button"
@@ -116,21 +131,12 @@ export function AppLayout({
                           setShowWsMenu(false)
                           setShowWsSettings(true)
                         }}
-                        className="flex w-full items-center gap-1.5 rounded-md px-2.5 py-1.5 text-left text-xs font-medium text-gray-700 hover:bg-gray-50"
+                        className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer"
                       >
-                        <span>⚙️</span> Workspace settings
+                        <span>⚙</span>
+                        <span>Workspace settings</span>
                       </button>
                     )}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowWsMenu(false)
-                        setShowCreateWs(true)
-                      }}
-                      className="flex w-full items-center gap-1.5 rounded-md px-2.5 py-1.5 text-left text-xs font-medium text-indigo-600 hover:bg-indigo-50"
-                    >
-                      <span>+</span> Create new workspace
-                    </button>
                   </div>
                 </div>
               )}
@@ -142,10 +148,10 @@ export function AppLayout({
             <button
               type="button"
               onClick={() => onNavigate('projects')}
-              className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 transition ${
+              className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 transition cursor-pointer ${
                 activeView === 'projects'
-                  ? 'bg-indigo-50 text-indigo-700 font-semibold'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                  ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-400 font-semibold'
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
               }`}
             >
               <span>📁</span>
@@ -155,10 +161,10 @@ export function AppLayout({
             <button
               type="button"
               onClick={() => onNavigate('team')}
-              className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 transition ${
+              className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 transition cursor-pointer ${
                 activeView === 'team'
-                  ? 'bg-indigo-50 text-indigo-700 font-semibold'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                  ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-400 font-semibold'
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
               }`}
             >
               <span>👥</span>
@@ -168,17 +174,21 @@ export function AppLayout({
         </div>
 
         {/* User Info & Logout (Bottom) */}
-        <div className="border-t border-gray-100 p-3">
-          <div className="flex items-center justify-between rounded-lg p-2 hover:bg-gray-50">
+        <div className="border-t border-gray-100 dark:border-gray-800 p-3">
+          <div className="flex items-center justify-between rounded-lg p-2 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition">
             <div className="min-w-0 pr-2">
-              <div className="truncate text-xs font-semibold text-gray-800">{user?.name}</div>
-              <div className="truncate text-[11px] text-gray-400">{user?.email}</div>
+              <div className="truncate text-xs font-semibold text-gray-800 dark:text-gray-200">
+                {user?.name}
+              </div>
+              <div className="truncate text-[11px] text-gray-400 dark:text-gray-500">
+                {user?.email}
+              </div>
             </div>
             <button
               type="button"
               onClick={() => void logout()}
               title="Log out"
-              className="rounded-md border border-gray-200 px-2 py-1 text-xs text-gray-600 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition"
+              className="rounded-md border border-gray-200 dark:border-gray-700 px-2 py-1 text-xs text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-800 transition cursor-pointer"
             >
               Exit
             </button>
@@ -189,41 +199,45 @@ export function AppLayout({
       {/* ── Main Content Area ─────────────────────────────────── */}
       <main className="flex-1 overflow-y-auto">
         {/* Top Navbar */}
-        <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-gray-200 bg-white/80 backdrop-blur-md px-8">
-          <div className="flex items-center gap-2 text-sm text-gray-500">
+        <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md px-8 transition-colors">
+          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
             <span>Workspaces</span>
             <span>/</span>
-            <span className="font-semibold text-gray-900">
+            <span className="font-semibold text-gray-900 dark:text-gray-100">
               {activeWorkspace?.name ?? 'Dashboard'}
             </span>
             {activeView === 'team' && (
               <>
                 <span>/</span>
-                <span className="font-semibold text-gray-900">Team</span>
+                <span className="font-semibold text-gray-900 dark:text-gray-100">Team</span>
               </>
             )}
           </div>
 
-          {/* Quick Search Button & Notification Bell */}
-          {activeWorkspace && (
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setShowSearch(true)}
-                className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50/70 px-3 py-1.5 text-xs text-gray-400 hover:bg-gray-100/80 transition"
-              >
-                <span className="flex items-center gap-1.5">
-                  <span>🔍</span>
-                  <span className="font-medium">Quick search...</span>
-                </span>
-                <kbd className="rounded border border-gray-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-gray-500 shadow-2xs">
-                  Ctrl K
-                </kbd>
-              </button>
+          <div className="flex items-center gap-3">
+            {activeWorkspace && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setShowSearch(true)}
+                  className="flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-800 px-3 py-1.5 text-xs text-gray-400 hover:bg-gray-100/80 dark:hover:bg-gray-700 transition"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <span>🔍</span>
+                    <span className="font-medium">Quick search...</span>
+                  </span>
+                  <kbd className="rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500 dark:text-gray-300 shadow-2xs">
+                    Ctrl K
+                  </kbd>
+                </button>
 
-              <NotificationBell workspaceId={activeWorkspace.id} />
-            </div>
-          )}
+                <NotificationBell workspaceId={activeWorkspace.id} />
+              </>
+            )}
+
+            {/* 🌗 Dark / Light Mode Toggle */}
+            <ThemeToggle />
+          </div>
         </header>
 
         {/* Page Content */}
