@@ -79,6 +79,12 @@
 - **📅 Calendar Grid View:** Monthly date matrix mapping task deadlines to date cells with month navigation (`◀`, `▶`, `Today`).
 - **Unified Filter State:** Search, priorities, assignees, and due dates remain synchronized across all views with zero redundant network requests.
 
+### 🌗 Dark Mode Theme System
+
+- **Custom Theme Engine:** Native Tailwind v4 custom dark variant (`@custom-variant dark`) toggling on `<html class="dark">`.
+- **System Preference & LocalStorage Persistence:** Automatically respects OS color scheme on initial visit and persists user preference across sessions.
+- **High-Contrast Dark Palette:** Polished midnight slate palette (`bg-gray-900`/`bg-gray-950`) designed for all dashboard views, modals, and team tables.
+
 ---
 
 ## 🏗️ System Architecture
