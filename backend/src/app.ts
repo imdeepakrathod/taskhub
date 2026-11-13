@@ -23,6 +23,10 @@ import searchRouter from './modules/search/search.routes.js'
 import path from 'node:path'
 import attachmentsRouter from './modules/attachments/attachments.routes.js'
 import notificationsRouter from './modules/notifications/notifications.routes.js'
+import { getMyTasksController } from './modules/tasks/tasks.controller.js'
+import { authenticate } from './middlewares/authenticate.js'
+import { authorizeWorkspaceMember } from './middlewares/authorize.js'
+import { asyncHandler } from './common/utils/asyncHandler.js'
 
 const app = express()
 
@@ -83,6 +87,12 @@ app.use('/api/v1/tasks/:taskId/labels', taskLabelsRouter)
 app.use('/api/v1/workspaces/:workspaceId/search', searchRouter)
 app.use('/api/v1/tasks/:taskId/attachments', attachmentsRouter)
 app.use('/api/v1/workspaces/:workspaceId/notifications', notificationsRouter)
+app.get(
+  '/api/v1/workspaces/:workspaceId/my-tasks',
+  authenticate,
+  authorizeWorkspaceMember(),
+  asyncHandler(getMyTasksController),
+)
 
 app.use((_req, _res, next) => {
   next(new NotFoundError('Route not found', 'ROUTE_NOT_FOUND'))

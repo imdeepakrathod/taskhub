@@ -3,7 +3,14 @@ import type { Request, Response } from 'express'
 import { ForbiddenError } from '../../common/errors/httpErrors.js'
 
 import type { CreateTaskInput, ListTasksQuery, UpdateTaskInput } from './tasks.schema.js'
-import { createTask, getTask, listTasks, removeTask, updateTask } from './tasks.service.js'
+import {
+  createTask,
+  getMyTasks,
+  getTask,
+  listTasks,
+  removeTask,
+  updateTask,
+} from './tasks.service.js'
 
 type CreateTaskRequest = Request<Record<string, string>, unknown, CreateTaskInput>
 type UpdateTaskRequest = Request<Record<string, string>, unknown, UpdateTaskInput>
@@ -75,4 +82,15 @@ export async function deleteTaskController(req: Request, res: Response): Promise
   await removeTask(taskId, projectId, req.membership.workspaceId, req.user.id)
 
   res.status(204).send()
+}
+
+export async function getMyTasksController(req: Request, res: Response) {
+  const { workspaceId } = req.params
+  const userId = req.user!.id
+
+  const tasks = await getMyTasks(workspaceId as string, userId)
+
+  res.status(200).json({
+    data: { tasks },
+  })
 }
