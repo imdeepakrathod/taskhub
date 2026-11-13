@@ -7,6 +7,7 @@ import { ProjectList } from '../features/projects'
 import type { Project } from '../features/projects/types'
 import { KanbanBoard } from '../features/tasks'
 import { useWorkspaces } from '../features/workspaces'
+import { MyTasksView } from '../features/tasks/components/MyTasksView'
 
 export function DashboardPage() {
   const { user } = useAuth()
@@ -68,6 +69,19 @@ export function DashboardPage() {
       )
     }
 
+    // 🎯 My Tasks View
+    if (activeView === 'my-tasks') {
+      return (
+        <MyTasksView
+          workspaceId={activeWorkspace.id}
+          onSelectTask={(task) => {
+            // Task select karne par directly uske project ke Kanban board par navigate karega
+            const project = { id: task.projectId, name: 'Project' } as Project
+            setSelectedProject(project)
+          }}
+        />
+      )
+    }
     if (selectedProject) {
       return (
         <KanbanBoard

@@ -114,3 +114,35 @@ export async function deleteTaskById(taskId: string) {
     where: { id: taskId },
   })
 }
+
+export async function findMyTasksInWorkspace(workspaceId: string, userId: string) {
+  return prisma.task.findMany({
+    where: {
+      assigneeId: userId,
+      project: {
+        workspaceId,
+      },
+    },
+    include: {
+      project: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      taskLabels: {
+        include: {
+          label: true,
+        },
+      },
+      assignee: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+    orderBy: [{ dueDate: 'asc' }, { createdAt: 'desc' }],
+  })
+}

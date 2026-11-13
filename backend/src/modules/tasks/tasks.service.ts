@@ -6,6 +6,7 @@ import type { CreateTaskInput, ListTasksQuery, UpdateTaskInput } from './tasks.s
 import {
   createTask as createTaskInDb,
   deleteTaskById,
+  findMyTasksInWorkspace,
   findTaskById,
   findTasksByProjectId,
   getNextTaskPosition,
@@ -219,4 +220,8 @@ export async function removeTask(
 
   // Broadcast deletion
   emitToProject(projectId, 'task:deleted', { taskId })
+}
+
+export async function getMyTasks(workspaceId: string, userId: string) {
+  return findMyTasksInWorkspace(workspaceId, userId)
 }

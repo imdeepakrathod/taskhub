@@ -7,8 +7,7 @@ import { CreateWorkspaceModal, WorkspaceSettingsModal } from '../../features/wor
 import type { Workspace } from '../../features/workspaces/types'
 import { NotificationBell } from '../../features/notifications'
 import { ThemeToggle } from '../common/ThemeToggle'
-
-export type AppView = 'projects' | 'team'
+export type AppView = 'projects' | 'team' | 'my-tasks'
 
 type AppLayoutProps = {
   workspaces: Workspace[]
@@ -170,6 +169,20 @@ export function AppLayout({
               <span>👥</span>
               <span>Team</span>
             </button>
+
+            {/* 🎯 My Tasks Link */}
+            <button
+              type="button"
+              onClick={() => onNavigate('my-tasks')}
+              className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 transition cursor-pointer ${
+                activeView === 'my-tasks'
+                  ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-400 font-semibold'
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+              }`}
+            >
+              <span>🎯</span>
+              <span>My Tasks</span>
+            </button>
           </nav>
         </div>
 
@@ -210,6 +223,13 @@ export function AppLayout({
               <>
                 <span>/</span>
                 <span className="font-semibold text-gray-900 dark:text-gray-100">Team</span>
+              </>
+            )}
+
+            {activeView === 'my-tasks' && (
+              <>
+                <span>/</span>
+                <span className="font-semibold text-gray-900 dark:text-gray-100">My Tasks</span>
               </>
             )}
           </div>

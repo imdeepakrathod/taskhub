@@ -34,4 +34,7 @@ export const queryKeys = {
   notifications: {
     byWorkspace: (workspaceId: string) => ['notifications', workspaceId] as const,
   },
+  myTasks: {
+    byWorkspace: (workspaceId: string) => ['my-tasks', workspaceId] as const,
+  },
 } as const
