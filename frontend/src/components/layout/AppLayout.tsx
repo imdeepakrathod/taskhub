@@ -13,9 +13,12 @@ type AppLayoutProps = {
   workspaces: Workspace[]
   activeWorkspace: Workspace | null
   activeView: AppView
+  projects?: Project[]
+  activeProject?: Project | null
   onSelectWorkspace: (workspaceId: string) => void
   onNavigate: (view: AppView) => void
   onSelectProject?: (project: Project) => void
+  onOpenCreateProject?: () => void
   children: React.ReactNode
 }
 
@@ -23,9 +26,12 @@ export function AppLayout({
   workspaces,
   activeWorkspace,
   activeView,
+  projects,
+  activeProject,
   onSelectWorkspace,
   onNavigate,
   onSelectProject,
+  onOpenCreateProject,
   children,
 }: AppLayoutProps) {
   const { user, logout } = useAuth()
@@ -33,6 +39,7 @@ export function AppLayout({
   const [showWsMenu, setShowWsMenu] = useState(false)
   const [showWsSettings, setShowWsSettings] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
+  const [projectsExpanded, setProjectsExpanded] = useState(true)
 
   // Global Shortcut: Cmd+K / Ctrl+K
   useEffect(() => {
@@ -184,6 +191,76 @@ export function AppLayout({
               <span>My Tasks</span>
             </button>
           </nav>
+          {/* ── Polished Projects Tree (Linear/Notion Style) ────── */}
+          {activeWorkspace && projects && projects.length > 0 && (
+            <div className="mt-6 px-3">
+              {/* Section Header */}
+              <div className="group flex items-center justify-between px-2 py-1 mb-1 text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                <button
+                  type="button"
+                  onClick={() => setProjectsExpanded(!projectsExpanded)}
+                  className="flex items-center gap-1.5 hover:text-gray-700 dark:hover:text-gray-300 transition cursor-pointer"
+                >
+                  <span className="text-[9px] transition-transform duration-200">
+                    {projectsExpanded ? '▾' : '▸'}
+                  </span>
+                  <span>Projects</span>
+                  <span className="rounded-full bg-gray-100 dark:bg-gray-800 px-1.5 py-0.2 text-[10px] font-semibold text-gray-500 dark:text-gray-400">
+                    {projects.length}
+                  </span>
+                </button>
+                {onOpenCreateProject && (
+                  <button
+                    type="button"
+                    onClick={onOpenCreateProject}
+                    title="New project"
+                    className="flex h-5 w-5 items-center justify-center rounded hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition cursor-pointer"
+                  >
+                    +
+                  </button>
+                )}
+              </div>
+
+              {/* Projects List */}
+              {projectsExpanded && (
+                <div className="space-y-0.5 max-h-56 overflow-y-auto pl-1 pr-1">
+                  {projects.map((proj) => {
+                    const isActive = activeProject?.id === proj.id && activeView === 'projects'
+                    return (
+                      <button
+                        key={proj.id}
+                        type="button"
+                        onClick={() => onSelectProject?.(proj)}
+                        className={`group flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition cursor-pointer ${
+                          isActive
+                            ? 'bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 font-semibold shadow-2xs'
+                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-gray-800/60 hover:text-gray-900 dark:hover:text-gray-200'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          {/* Modern Hash/Dot Icon */}
+                          <span
+                            className={`flex h-4 w-4 shrink-0 items-center justify-center rounded text-[11px] font-bold ${
+                              isActive
+                                ? 'bg-indigo-200 dark:bg-indigo-800 text-indigo-700 dark:text-indigo-200'
+                                : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600'
+                            }`}
+                          >
+                            #
+                          </span>
+                          <span className="truncate">{proj.name}</span>
+                        </div>
+
+                        {isActive && (
+                          <span className="h-1.5 w-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 shrink-0" />
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* User Info & Logout (Bottom) */}
