@@ -10,6 +10,7 @@ import { useTasks } from '../hooks/useTasks'
 import type { Task, TaskPriority, TaskStatus } from '../types'
 import { formatDueDate } from '../utils/dateUtils'
 import { CreateTaskModal } from './CreateTaskModal'
+import { ExportTasksMenu } from './ExportTasksMenu'
 import { TaskCard } from './TaskCard'
 import { TaskDetailPanel } from './TaskDetailPanel'
 import { TaskListView } from './TaskListView'
@@ -279,15 +280,20 @@ export function KanbanBoard({ projectId, projectName, workspaceId, onBack }: Kan
 
         {/* Top Right Actions */}
         <div className="flex items-center gap-2.5">
+          <ExportTasksMenu
+            tasks={filteredTasks}
+            allTasks={tasks}
+            projectName={currentProjectName}
+          />
           <button
             onClick={() => setSettingsModalOpen(true)}
-            className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 shadow-2xs transition cursor-pointer"
+            className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/60 shadow-2xs transition cursor-pointer"
           >
             ⚙️ Settings
           </button>
           <button
             onClick={() => setLabelsModalOpen(true)}
-            className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 shadow-2xs transition cursor-pointer"
+            className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/60 shadow-2xs transition cursor-pointer"
           >
             🏷️ Labels
           </button>
