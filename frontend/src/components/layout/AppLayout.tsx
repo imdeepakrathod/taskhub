@@ -155,13 +155,13 @@ export function AppLayout({
               type="button"
               onClick={() => onNavigate('projects')}
               className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 transition cursor-pointer ${
-                activeView === 'projects'
+                activeView === 'projects' && !activeProject
                   ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-400 font-semibold'
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
               }`}
             >
               <span>📁</span>
-              <span>Projects</span>
+              <span>All Projects</span>
             </button>
 
             <button
@@ -191,9 +191,13 @@ export function AppLayout({
               <span>My Tasks</span>
             </button>
           </nav>
+
           {/* ── Polished Projects Tree (Linear/Notion Style) ────── */}
           {activeWorkspace && projects && projects.length > 0 && (
-            <div className="mt-6 px-3">
+            <div className="mt-4 px-3">
+              {/* Subtle Divider */}
+              <div className="mb-3 border-t border-gray-100 dark:border-gray-800" />
+
               {/* Section Header */}
               <div className="group flex items-center justify-between px-2 py-1 mb-1 text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
                 <button
@@ -201,8 +205,8 @@ export function AppLayout({
                   onClick={() => setProjectsExpanded(!projectsExpanded)}
                   className="flex items-center gap-1.5 hover:text-gray-700 dark:hover:text-gray-300 transition cursor-pointer"
                 >
-                  <span className="text-[9px] transition-transform duration-200">
-                    {projectsExpanded ? '▾' : '▸'}
+                  <span className="text-[10px] transition-transform duration-200">
+                    {projectsExpanded ? '▼' : '▶'}
                   </span>
                   <span>Projects</span>
                   <span className="rounded-full bg-gray-100 dark:bg-gray-800 px-1.5 py-0.2 text-[10px] font-semibold text-gray-500 dark:text-gray-400">
@@ -214,7 +218,7 @@ export function AppLayout({
                     type="button"
                     onClick={onOpenCreateProject}
                     title="New project"
-                    className="flex h-5 w-5 items-center justify-center rounded hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition cursor-pointer"
+                    className="flex h-5 w-5 items-center justify-center rounded hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition cursor-pointer font-bold"
                   >
                     +
                   </button>
@@ -296,6 +300,15 @@ export function AppLayout({
             <span className="font-semibold text-gray-900 dark:text-gray-100">
               {activeWorkspace?.name ?? 'Dashboard'}
             </span>
+            {activeProject && activeView === 'projects' && (
+              <>
+                <span>/</span>
+                <span className="font-semibold text-gray-900 dark:text-gray-100">
+                  {activeProject.name}
+                </span>
+              </>
+            )}
+
             {activeView === 'team' && (
               <>
                 <span>/</span>
