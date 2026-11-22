@@ -85,6 +85,13 @@
 - **System Preference & LocalStorage Persistence:** Automatically respects OS color scheme on initial visit and persists user preference across sessions.
 - **High-Contrast Dark Palette:** Polished midnight slate palette (`bg-gray-900`/`bg-gray-950`) designed for all dashboard views, modals, and team tables.
 
+### 📊 Data Export (CSV & JSON)
+
+- **RFC 4180 Compliant CSV Exporter:** Exports tasks to spreadsheet-ready `.csv` files with safe cell escaping, handling commas, quotes, and multiline descriptions.
+- **Excel UTF-8 BOM (`\uFEFF`) Support:** Automatically prepends byte order marks to ensure special characters, accents, and emojis display without corruption in Microsoft Excel and Google Sheets.
+- **Full Structured JSON Backups:** 1-click formatted JSON exports with project metadata, nested taxonomy labels, and assignee details for migration and archiving.
+- **Smart Data Scope Filtering:** Dynamic toggle allowing users to export either the active filtered view or the entire project task archive.
+
 ---
 
 ## 🏗️ System Architecture
